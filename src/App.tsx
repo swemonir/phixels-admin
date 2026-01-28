@@ -1,11 +1,12 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   useLocation,
-  Navigate } from
-'react-router-dom';
+  Navigate
+} from
+  'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 // Dashboard Layout & Auth
 import { LoginPage } from './pages/dashboard/LoginPage';
@@ -22,6 +23,7 @@ import { BlogManagement } from './pages/dashboard/BlogManagement';
 import { CaseStudiesManagement } from './pages/dashboard/CaseStudiesManagement';
 import { PortfolioManagement } from './pages/dashboard/PortfolioManagement';
 import { ProductsManagement } from './pages/dashboard/ProductsManagement';
+import { ServicesManagement } from './pages/dashboard/ServicesManagement';
 import { ReviewsManagement } from './pages/dashboard/ReviewsManagement';
 import { CareersManagement } from './pages/dashboard/CareersManagement';
 // Marketing Pages
@@ -61,6 +63,7 @@ export function App() {
             <Route path="case-studies" element={<CaseStudiesManagement />} />
             <Route path="portfolio" element={<PortfolioManagement />} />
             <Route path="products" element={<ProductsManagement />} />
+            <Route path="services" element={<ServicesManagement />} />
             <Route path="reviews" element={<ReviewsManagement />} />
             <Route path="careers" element={<CareersManagement />} />
 

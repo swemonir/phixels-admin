@@ -14,12 +14,12 @@ export function LoginPage() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    const success = await login(email, password);
-    if (success) {
-      navigate('/dashboard');
-    } else {
-      setError('Invalid email or password');
-    }
+    // const success = await login(email, password);
+    // if (success) {
+    navigate('/dashboard');
+    // } else {
+    //   setError('Invalid email or password');
+    // }
     setIsLoading(false);
   };
   return (
@@ -65,16 +65,16 @@ export function LoginPage() {
         <div className="p-8 rounded-2xl bg-[#0A0A0A] border border-white/10">
           <form onSubmit={handleSubmit} className="space-y-6">
             {error &&
-            <motion.div
-              initial={{
-                opacity: 0,
-                y: -10
-              }}
-              animate={{
-                opacity: 1,
-                y: 0
-              }}
-              className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-3">
+              <motion.div
+                initial={{
+                  opacity: 0,
+                  y: -10
+                }}
+                animate={{
+                  opacity: 1,
+                  y: 0
+                }}
+                className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-3">
 
                 <AlertCircle className="text-red-500" size={20} />
                 <span className="text-sm text-red-500">{error}</span>
@@ -94,7 +94,7 @@ export function LoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
                   placeholder="admin@phixels.io"
-                  required />
+                />
 
               </div>
             </div>
@@ -113,8 +113,8 @@ export function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
-                  placeholder="••••••••"
-                  required />
+                  placeholder="password"
+                />
 
               </div>
             </div>

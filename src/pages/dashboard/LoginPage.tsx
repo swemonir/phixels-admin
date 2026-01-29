@@ -14,13 +14,19 @@ export function LoginPage() {
     e.preventDefault();
     setError('');
     setIsLoading(true);
-    // const success = await login(email, password);
-    // if (success) {
-    navigate('/dashboard');
-    // } else {
-    //   setError('Invalid email or password');
-    // }
-    setIsLoading(false);
+
+    try {
+      const success = await login(email, password);
+      if (success) {
+        navigate('/dashboard');
+      } else {
+        setError('Invalid email or password');
+      }
+    } catch (err) {
+      setError('An error occurred during login');
+    } finally {
+      setIsLoading(false);
+    }
   };
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 relative overflow-hidden">
@@ -128,11 +134,7 @@ export function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 p-4 rounded-lg bg-white/5 border border-white/10">
-            <p className="text-xs text-gray-400 mb-2">Demo Credentials:</p>
-            <p className="text-xs text-gray-300">Email: admin@phixels.io</p>
-            <p className="text-xs text-gray-300">Password: admin123</p>
-          </div>
+
         </div>
       </motion.div>
     </div>);

@@ -17,9 +17,10 @@ export function ServicesManagement() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
-        title: '',
+        name: '',
         description: '',
-        icon: '',
+        category: '',
+        pricing: '',
         features: [] as string[],
     });
     const [featureInput, setFeatureInput] = useState('');
@@ -35,7 +36,10 @@ export function ServicesManagement() {
             const data = await servicesApi.getAll();
             const displayData = data.map(s => ({
                 ...s,
-                id: s._id || s.id || '',
+                id: s._id || '',
+                category: s.category || '',
+                pricing: s.pricing || '',
+                features: s.features || []
             }));
             setServices(displayData);
         } catch (err: any) {
@@ -49,39 +53,44 @@ export function ServicesManagement() {
     const handleEdit = (service: ServiceDisplay) => {
         setEditingService(service);
         setFormData({
-            title: service.title,
+            name: service.name,
             description: service.description,
-            icon: service.icon,
-            features: service.features,
+            category: service.category || '',
+            pricing: service.pricing || '',
+            features: service.features || [],
         });
         setIsModalOpen(true);
     };
 
-    const handleDelete = (service: ServiceDisplay) => {
-        if (confirm(`Are you sure you want to delete "${service.title}"?`)) {
-            setServices(services.filter((s) => s.id !== service.id));
+    const handleDelete = async (service: ServiceDisplay) => {
+        if (confirm(`Are you sure you want to delete "${service.name}"?`)) {
+            try {
+                await servicesApi.delete(service.id);
+                setServices(services.filter((s) => s.id !== service.id));
+            } catch (err: any) {
+                console.error('Error deleting service:', err);
+                alert(err.message || 'Failed to delete service');
+            }
         }
     };
 
     const handleSave = async () => {
         try {
             setError(null);
+            const payload = {
+                name: formData.name,
+                description: formData.description,
+                category: formData.category,
+                pricing: formData.pricing,
+                features: formData.features
+            };
+
             if (editingService) {
-                setServices(
-                    services.map((s) =>
-                        s.id === editingService.id
-                            ? { ...editingService, ...formData }
-                            : s
-                    )
-                );
+                await servicesApi.update(editingService.id, payload);
             } else {
-                const newService = await servicesApi.create(formData);
-                const displayService = {
-                    ...newService,
-                    id: newService._id || newService.id || Date.now().toString(),
-                };
-                setServices([...services, displayService]);
+                await servicesApi.create(payload);
             }
+            fetchServices();
             handleCloseModal();
         } catch (err: any) {
             console.error('Error saving service:', err);
@@ -93,9 +102,10 @@ export function ServicesManagement() {
         setIsModalOpen(false);
         setEditingService(null);
         setFormData({
-            title: '',
+            name: '',
             description: '',
-            icon: '',
+            category: '',
+            pricing: '',
             features: [],
         });
         setFeatureInput('');
@@ -120,8 +130,8 @@ export function ServicesManagement() {
 
     const columns = [
         {
-            key: 'title',
-            label: 'Service Title',
+            key: 'name',
+            label: 'Service Name',
             render: (value: string) => (
                 <span className="font-bold text-white">{value}</span>
             ),
@@ -134,24 +144,26 @@ export function ServicesManagement() {
             ),
         },
         {
-            key: 'icon',
-            label: 'Icon URL',
+            key: 'category',
+            label: 'Category',
             render: (value: string) => (
-                <div className="flex items-center gap-2">
-                    {value && (
-                        <img src={value} alt="icon" className="w-6 h-6 object-contain" />
-                    )}
-                    <span className="text-gray-400 text-xs truncate max-w-[150px]">
-                        {value}
-                    </span>
-                </div>
+                <span className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-bold">
+                    {value || 'N/A'}
+                </span>
+            ),
+        },
+        {
+            key: 'pricing',
+            label: 'Pricing',
+            render: (value: string) => (
+                <span className="text-green-400">{value || 'Contact'}</span>
             ),
         },
         {
             key: 'features',
             label: 'Features',
             render: (value: string[]) => (
-                <span className="text-gray-400">{value.length} features</span>
+                <span className="text-gray-400">{value ? value.length : 0} features</span>
             ),
         },
     ];
@@ -200,13 +212,13 @@ export function ServicesManagement() {
                     color="from-blue-500 to-cyan-500" />
                 <ManagementStatsCard
                     title="Total Features"
-                    value={services.reduce((sum, s) => sum + s.features.length, 0)}
+                    value={services.reduce((sum, s) => sum + (s.features?.length || 0), 0)}
                     icon={Wrench}
                     color="from-green-500 to-emerald-500" />
                 <ManagementStatsCard
                     title="Avg Features"
                     value={services.length > 0
-                        ? (services.reduce((sum, s) => sum + s.features.length, 0) / services.length).toFixed(1)
+                        ? (services.reduce((sum, s) => sum + (s.features?.length || 0), 0) / services.length).toFixed(1)
                         : '0'}
                     icon={Wrench}
                     color="from-purple-500 to-pink-500" />
@@ -230,13 +242,13 @@ export function ServicesManagement() {
                 <div className="space-y-6">
                     <div className="space-y-2">
                         <label className="text-sm text-gray-400 font-medium">
-                            Service Title *
+                            Service Name *
                         </label>
                         <input
                             type="text"
-                            value={formData.title}
+                            value={formData.name}
                             onChange={(e) =>
-                                setFormData({ ...formData, title: e.target.value })
+                                setFormData({ ...formData, name: e.target.value })
                             }
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
                             placeholder="Web Development"
@@ -258,19 +270,33 @@ export function ServicesManagement() {
                             required />
                     </div>
 
-                    <div className="space-y-2">
-                        <label className="text-sm text-gray-400 font-medium">
-                            Icon URL *
-                        </label>
-                        <input
-                            type="url"
-                            value={formData.icon}
-                            onChange={(e) =>
-                                setFormData({ ...formData, icon: e.target.value })
-                            }
-                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                            placeholder="http://example.com/icon.png"
-                            required />
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <label className="text-sm text-gray-400 font-medium">
+                                Category
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.category}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, category: e.target.value })
+                                }
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                                placeholder="Development" />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm text-gray-400 font-medium">
+                                Pricing
+                            </label>
+                            <input
+                                type="text"
+                                value={formData.pricing}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, pricing: e.target.value })
+                                }
+                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                                placeholder="$5000 - $10000" />
+                        </div>
                     </div>
 
                     {/* Features */}

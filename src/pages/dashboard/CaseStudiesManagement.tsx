@@ -1,184 +1,205 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, FileText, Star } from 'lucide-react';
 import { DataTable } from '../../components/dashboard/DataTable';
 import { ContentModal } from '../../components/dashboard/ContentModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
 import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
-interface CaseStudy {
+import { RichTextEditor } from '../../components/dashboard/RichTextEditor';
+import { caseStudiesApi } from '../../services/api';
+import type { CaseStudy } from '../../types/types';
+
+interface CaseStudyDisplay extends CaseStudy {
   id: string;
-  client: string;
-  industry: string;
-  title: string;
-  challenge: string;
-  solution: string;
-  result: string;
+  category: string;
+  featured: boolean;
   image: string;
-  featuredImage?: string;
-  isFeatured: boolean;
+  overview: string;
 }
-const mockCaseStudies: CaseStudy[] = [
-{
-  id: '1',
-  client: 'Global Logistics Co',
-  industry: 'Supply Chain',
-  title: 'Optimizing Last-Mile Delivery with AI',
-  challenge:
-  'Inefficient route planning leading to high fuel costs and delayed deliveries.',
-  solution:
-  'Developed an AI-powered routing engine integrated with driver mobile apps.',
-  result: '30% Reduction in Fuel Costs',
-  image:
-  'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80',
-  featuredImage:
-  'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80',
-  isFeatured: false
-}];
 
 export function CaseStudiesManagement() {
-  const [studies, setStudies] = useState<CaseStudy[]>(mockCaseStudies);
+  const [studies, setStudies] = useState<CaseStudyDisplay[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingStudy, setEditingStudy] = useState<CaseStudy | null>(null);
-  const [formData, setFormData] = useState({
-    client: '',
-    industry: 'Supply Chain',
+  const [editingStudy, setEditingStudy] = useState<CaseStudyDisplay | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const [form, setForm] = useState({
     title: '',
+    client: '',
+    overview: '',
     challenge: '',
     solution: '',
-    result: '',
+    results: '',
+    technologies: [] as string[],
     image: '',
-    featuredImage: '',
-    isFeatured: false
+    featured: false,
+    category: 'FinTech' // Default
   });
-  const industries = [
-  'Supply Chain',
-  'Healthcare',
-  'E-Commerce',
-  'FinTech',
-  'Education',
-  'Energy',
-  'Travel',
-  'Manufacturing',
-  'Food & Beverage',
-  'Real Estate'];
 
-  const toggleFeatured = (study: CaseStudy) => {
-    setStudies(
-      studies.map((s) =>
-      s.id === study.id ?
-      {
+  const categories = [
+    'FinTech', 'Healthcare', 'E-Commerce', 'Education',
+    'Energy', 'Travel', 'Manufacturing', 'Real Estate'
+  ];
+
+  useEffect(() => {
+    fetchStudies();
+  }, []);
+
+  const fetchStudies = async () => {
+    try {
+      setLoading(true);
+      const data = await caseStudiesApi.getAll();
+      const displayData = data.map((s: any) => ({
         ...s,
-        isFeatured: !s.isFeatured
-      } :
-      s
-      )
-    );
+        id: s._id,
+        client: s.client || '',
+        title: s.title || '',
+        category: 'Uncategorized',
+        featured: false,
+        image: s.image || '',
+        overview: '', // API 'overview' might be missing
+        challenge: s.challenge || '',
+        solution: s.solution || '',
+        results: s.results || '',
+        technologies: s.technologies || []
+      }));
+      setStudies(displayData);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
-  const handleEdit = (study: CaseStudy) => {
+
+  const handleEdit = (study: CaseStudyDisplay) => {
     setEditingStudy(study);
-    setFormData(study);
+    setForm({
+      title: study.title || '',
+      client: study.client || '',
+      overview: study.overview || '',
+      challenge: study.challenge || '',
+      solution: study.solution || '',
+      results: study.results || '',
+      technologies: study.technologies || [],
+      image: study.image || '',
+      featured: study.featured,
+      category: study.category
+    });
     setIsModalOpen(true);
   };
-  const handleDelete = (study: CaseStudy) => {
-    if (confirm(`Delete case study "${study.title}"?`)) {
-      setStudies(studies.filter((s) => s.id !== study.id));
+
+  const handleDelete = async (study: CaseStudyDisplay) => {
+    if (confirm(`Delete "${study.title}"?`)) {
+      try {
+        await caseStudiesApi.delete(study.id);
+        setStudies(studies.filter(s => s.id !== study.id));
+      } catch (err) {
+        console.error(err);
+        alert('Failed to delete');
+      }
     }
   };
-  const handleSave = () => {
-    if (editingStudy) {
-      setStudies(
-        studies.map((s) =>
-        s.id === editingStudy.id ?
-        {
-          ...formData,
-          id: s.id
-        } :
-        s
-        )
-      );
-    } else {
-      setStudies([
-      ...studies,
-      {
-        ...formData,
-        id: Date.now().toString()
-      }]
-      );
+
+  const handleSave = async () => {
+    try {
+      const payload: any = {
+        title: form.title,
+        client: form.client,
+        overview: form.overview,
+        challenge: form.challenge,
+        solution: form.solution,
+        results: form.results,
+        technologies: form.technologies,
+        // image: form.image // map if needed
+      };
+
+      if (editingStudy) {
+        await caseStudiesApi.update(editingStudy.id, payload);
+      } else {
+        await caseStudiesApi.create(payload);
+      }
+      fetchStudies();
+      handleCloseModal();
+    } catch (err) {
+      console.error(err);
+      alert('Failed to save');
     }
-    handleCloseModal();
   };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingStudy(null);
-    setFormData({
-      client: '',
-      industry: 'Supply Chain',
+    setForm({
       title: '',
+      client: '',
+      overview: '',
       challenge: '',
       solution: '',
-      result: '',
+      results: '',
+      technologies: [],
       image: '',
-      featuredImage: '',
-      isFeatured: false
+      featured: false,
+      category: 'FinTech'
     });
   };
+
   const columns = [
-  {
-    key: 'title',
-    label: 'Case Study',
-    render: (value: string, row: CaseStudy) =>
-    <div className="flex items-center gap-3">
+    {
+      key: 'title',
+      label: 'Case Study',
+      render: (value: string, row: CaseStudyDisplay) =>
+        <div className="flex items-center gap-3">
           <img
-        src={row.image}
-        alt={value}
-        className="w-12 h-12 rounded-lg object-cover" />
+            src={row.image}
+            alt={value}
+            className="w-12 h-12 rounded-lg object-cover" />
 
           <div>
             <div className="font-bold text-white flex items-center gap-2">
               {value}
-              {row.isFeatured &&
-          <Star size={14} className="fill-yellow-400 text-yellow-400" />
-          }
+              {row.featured &&
+                <Star size={14} className="fill-yellow-400 text-yellow-400" />
+              }
             </div>
             <div className="text-xs text-gray-400">{row.client}</div>
           </div>
         </div>
 
-  },
-  {
-    key: 'industry',
-    label: 'Industry',
-    render: (value: string) =>
-    <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold">
-          {value}
+    },
+    {
+      key: 'category', // Changed from industry if using category
+      label: 'Category',
+      render: (value: string) =>
+        <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold">
+          {value || 'N/A'}
         </span>
 
-  },
-  {
-    key: 'result',
-    label: 'Result',
-    render: (value: string) =>
-    <span className="font-bold text-[color:var(--vibrant-green)]">
-          {value}
-        </span>
-
-  },
-  {
-    key: 'isFeatured',
-    label: 'Featured',
-    render: (value: boolean, row: CaseStudy) =>
-    <button
-      onClick={(e) => {
-        e.stopPropagation();
-        toggleFeatured(row);
-      }}
-      className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${value ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
+    },
+    {
+      key: 'results', // Changed from result to results
+      label: 'Result',
+      render: (value: string) =>
+        <div className="font-bold text-[color:var(--vibrant-green)] line-clamp-2" dangerouslySetInnerHTML={{ __html: value }} />
+    },
+    {
+      key: 'featured',
+      label: 'Featured',
+      render: (value: boolean, row: CaseStudyDisplay) =>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            // toggleFeatured(row); // Implement toggle if needed via API update
+          }}
+          className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${value ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
 
           {value ? 'Featured' : 'Set Featured'}
         </button>
 
-  }];
+    }];
 
-  const featuredCount = studies.filter((s) => s.isFeatured).length;
+  if (loading) {
+    return <div className="text-white p-4">Loading...</div>;
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -206,22 +227,9 @@ export function CaseStudiesManagement() {
 
         <ManagementStatsCard
           title="Featured"
-          value={featuredCount}
+          value={studies.filter(s => s.featured).length}
           icon={Star}
           color="from-yellow-500 to-orange-500" />
-
-        <ManagementStatsCard
-          title="Industries"
-          value={new Set(studies.map((s) => s.industry)).size}
-          icon={FileText}
-          color="from-blue-500 to-cyan-500" />
-
-        <ManagementStatsCard
-          title="Clients"
-          value={new Set(studies.map((s) => s.client)).size}
-          icon={FileText}
-          color="from-purple-500 to-pink-500" />
-
       </div>
 
       <DataTable
@@ -247,12 +255,12 @@ export function CaseStudiesManagement() {
               </label>
               <input
                 type="text"
-                value={formData.client}
+                value={form.client}
                 onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  client: e.target.value
-                })
+                  setForm({
+                    ...form,
+                    client: e.target.value
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="Global Logistics Co"
@@ -261,21 +269,21 @@ export function CaseStudiesManagement() {
             </div>
             <div className="space-y-2">
               <label className="text-sm text-gray-400 font-medium">
-                Industry *
+                Category *
               </label>
               <select
-                value={formData.industry}
+                value={form.category}
                 onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  industry: e.target.value
-                })
+                  setForm({
+                    ...form,
+                    category: e.target.value
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none">
 
-                {industries.map((ind) =>
-                <option key={ind} value={ind}>
-                    {ind}
+                {categories.map((cat) =>
+                  <option key={cat} value={cat}>
+                    {cat}
                   </option>
                 )}
               </select>
@@ -288,12 +296,12 @@ export function CaseStudiesManagement() {
             </label>
             <input
               type="text"
-              value={formData.title}
+              value={form.title}
               onChange={(e) =>
-              setFormData({
-                ...formData,
-                title: e.target.value
-              })
+                setForm({
+                  ...form,
+                  title: e.target.value
+                })
               }
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
               placeholder="Optimizing Last-Mile Delivery with AI"
@@ -301,108 +309,79 @@ export function CaseStudiesManagement() {
 
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm text-gray-400 font-medium">
-              Challenge *
-            </label>
-            <textarea
-              value={formData.challenge}
-              onChange={(e) =>
-              setFormData({
-                ...formData,
-                challenge: e.target.value
-              })
-              }
-              rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none resize-none"
-              placeholder="Describe the client's challenge..."
-              required />
-
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm text-gray-400 font-medium">
-              Solution *
-            </label>
-            <textarea
-              value={formData.solution}
-              onChange={(e) =>
-              setFormData({
-                ...formData,
-                solution: e.target.value
-              })
-              }
-              rows={3}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none resize-none"
-              placeholder="Describe your solution..."
-              required />
-
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm text-gray-400 font-medium">
-              Result/Impact *
-            </label>
-            <input
-              type="text"
-              value={formData.result}
-              onChange={(e) =>
-              setFormData({
-                ...formData,
-                result: e.target.value
-              })
-              }
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-              placeholder="30% Reduction in Fuel Costs"
-              required />
-
-          </div>
-
           <ImageUploadField
-            value={formData.image}
+            value={form.image}
             onChange={(url) =>
-            setFormData({
-              ...formData,
-              image: url
-            })
-            }
-            label="Case Study Image *" />
-
-
-          <ImageUploadField
-            value={formData.featuredImage}
-            onChange={(url) =>
-            setFormData({
-              ...formData,
-              featuredImage: url
-            })
-            }
-            label="Featured Section Image (for Homepage)" />
-
-
-          <div className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10">
-            <input
-              type="checkbox"
-              id="isFeatured"
-              checked={formData.isFeatured}
-              onChange={(e) =>
-              setFormData({
-                ...formData,
-                isFeatured: e.target.checked
+              setForm({
+                ...form,
+                image: url
               })
-              }
-              className="w-5 h-5 rounded border-white/20 bg-white/5 text-[color:var(--bright-red)] focus:ring-[color:var(--bright-red)] focus:ring-offset-0" />
+            }
+            label="Project Thumbnail *" />
 
-            <label
-              htmlFor="isFeatured"
-              className="text-sm text-white font-medium cursor-pointer flex items-center gap-2">
 
-              <Star size={16} className="text-yellow-400" />
-              Show in Featured Section (Homepage)
+          <RichTextEditor
+            value={form.overview}
+            onChange={(val) =>
+              setForm({
+                ...form,
+                overview: val
+              })
+            }
+            label="Overview"
+            placeholder="Project overview..." />
+
+          <RichTextEditor
+            value={form.challenge}
+            onChange={(val) =>
+              setForm({
+                ...form,
+                challenge: val
+              })
+            }
+            label="The Challenge"
+            placeholder="What was the problem?..." />
+
+          <RichTextEditor
+            value={form.solution}
+            onChange={(val) =>
+              setForm({
+                ...form,
+                solution: val
+              })
+            }
+            label="The Solution"
+            placeholder="How did we solve it?..." />
+
+          <RichTextEditor
+            value={form.results}
+            onChange={(val) =>
+              setForm({
+                ...form,
+                results: val
+              })
+            }
+            label="The Results"
+            placeholder="What were the outcomes?..." />
+
+
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.featured}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    featured: e.target.checked
+                  })
+                }
+                className="rounded border-white/10 bg-white/5 text-[color:var(--bright-red)] focus:ring-[color:var(--bright-red)]" />
+
+              <span className="text-white">Feature this case study</span>
             </label>
           </div>
         </div>
       </ContentModal>
     </div>);
-
 }

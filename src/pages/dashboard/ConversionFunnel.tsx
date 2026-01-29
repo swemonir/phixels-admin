@@ -1,22 +1,21 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import {
   Filter,
   Target,
-  ArrowRight,
   Users,
   CheckCircle,
-  Clock } from
-'lucide-react';
-import { motion } from 'framer-motion';
+  Clock
+} from
+  'lucide-react';
 export function ConversionFunnel() {
   const [selectedFilter, setSelectedFilter] = useState('All Traffic');
   const filters = [
-  'All Traffic',
-  'Organic Search',
-  'Social Media',
-  'Paid Ads',
-  'Direct',
-  'Email'];
+    'All Traffic',
+    'Organic Search',
+    'Social Media',
+    'Paid Ads',
+    'Direct',
+    'Email'];
 
   // Mock data for funnel steps based on filter
   const getFunnelData = (filter: string) => {
@@ -204,20 +203,20 @@ export function ConversionFunnel() {
             </div>
             <div className="space-y-2">
               {filters.map((filter, i) =>
-              <button
-                key={i}
-                onClick={() => setSelectedFilter(filter)}
-                className={`w-full flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${selectedFilter === filter ? 'bg-white/5 border-[color:var(--bright-red)]/50' : 'hover:bg-white/5 border-transparent hover:border-white/10'}`}>
+                <button
+                  key={i}
+                  onClick={() => setSelectedFilter(filter)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-all border ${selectedFilter === filter ? 'bg-white/5 border-[color:var(--bright-red)]/50' : 'hover:bg-white/5 border-transparent hover:border-white/10'}`}>
 
                   <div
-                  className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${selectedFilter === filter ? 'border-[color:var(--bright-red)]' : 'border-gray-600'}`}>
+                    className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${selectedFilter === filter ? 'border-[color:var(--bright-red)]' : 'border-gray-600'}`}>
 
                     {selectedFilter === filter &&
-                  <div className="w-2 h-2 rounded-full bg-[color:var(--bright-red)]" />
-                  }
+                      <div className="w-2 h-2 rounded-full bg-[color:var(--bright-red)]" />
+                    }
                   </div>
                   <span
-                  className={`text-sm ${selectedFilter === filter ? 'text-white font-bold' : 'text-gray-400'}`}>
+                    className={`text-sm ${selectedFilter === filter ? 'text-white font-bold' : 'text-gray-400'}`}>
 
                     {filter}
                   </span>

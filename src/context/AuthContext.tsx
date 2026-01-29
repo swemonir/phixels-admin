@@ -1,11 +1,6 @@
 import React, { useEffect, useState, createContext, useContext } from 'react';
-
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
-}
+import { authApi } from '../services/api';
+import type { User } from '../types/types';
 
 interface AuthContextType {
   user: User | null;
@@ -25,7 +20,11 @@ export function AuthProvider({ children }: { children: React.ReactNode; }) {
     const savedUser = localStorage.getItem('dashboard_user');
     const savedToken = localStorage.getItem('auth_token');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("Failed to parse user from local storage", e);
+      }
     }
     if (savedToken) {
       setToken(savedToken);
@@ -33,31 +32,33 @@ export function AuthProvider({ children }: { children: React.ReactNode; }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    // Mock authentication - generates a dummy token
-    // In production, this should call your backend login API
-    if (email === 'admin@phixels.io' && password === 'admin123') {
-      const mockUser = {
-        id: '1',
-        name: 'Admin User',
-        email: 'admin@phixels.io',
-        role: 'admin'
-      };
-      const mockToken = 'mock-jwt-token-' + Date.now();
+    try {
+      const response = await authApi.login({ email, password });
 
-      setUser(mockUser);
-      setToken(mockToken);
-      localStorage.setItem('dashboard_user', JSON.stringify(mockUser));
-      localStorage.setItem('auth_token', mockToken);
-      return true;
+      if (response && response.token && response.user) {
+        setToken(response.token);
+        setUser(response.user);
+
+        localStorage.setItem('auth_token', response.token);
+        localStorage.setItem('dashboard_user', JSON.stringify(response.user));
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error("Login failed:", error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
+    // Optionally call API logout
+    authApi.logout().catch(err => console.error("Logout API failed", err));
+
     setUser(null);
     setToken(null);
     localStorage.removeItem('dashboard_user');
     localStorage.removeItem('auth_token');
+    window.location.href = '/login';
   };
 
   return (
@@ -67,7 +68,7 @@ export function AuthProvider({ children }: { children: React.ReactNode; }) {
         token,
         login,
         logout,
-        isAuthenticated: !!user
+        isAuthenticated: !!token
       }}>
       {children}
     </AuthContext.Provider>

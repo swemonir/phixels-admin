@@ -20,13 +20,11 @@ export function ProductsManagement() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    pricing: 0,
+    price: 0,
     category: 'Template',
     features: [] as string[],
-    images: [] as string[],
   });
   const [featureInput, setFeatureInput] = useState('');
-  const [imageInput, setImageInput] = useState('');
 
   // Fetch products on mount
   useEffect(() => {
@@ -38,11 +36,12 @@ export function ProductsManagement() {
       setLoading(true);
       setError(null);
       const data = await productsApi.getAll();
-      console.log(data);
-      // Convert _id to id for consistency with UI
       const displayData = data.map(p => ({
         ...p,
-        id: p._id || p.id || '',
+        id: p._id || '',
+        price: p.price || 0,
+        category: p.category || 'Template',
+        features: p.features || [],
       }));
       setProducts(displayData);
     } catch (err: any) {
@@ -58,43 +57,39 @@ export function ProductsManagement() {
     setFormData({
       name: product.name,
       description: product.description,
-      pricing: product.pricing,
+      price: product.price,
       category: product.category,
       features: product.features,
-      images: product.images,
     });
     setIsModalOpen(true);
   };
 
-  const handleDelete = (product: ProductDisplay) => {
+  const handleDelete = async (product: ProductDisplay) => {
     if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
-      // Note: Delete endpoint not in Postman collection, just remove from UI
-      setProducts(products.filter((p) => p.id !== product.id));
+      try {
+        await productsApi.delete(product.id);
+        setProducts(products.filter((p) => p.id !== product.id));
+      } catch (err: any) {
+        console.error('Error deleting product:', err);
+        alert(err.message || 'Failed to delete product');
+      }
     }
   };
 
   const handleSave = async () => {
     try {
       setError(null);
+      const payload = {
+        ...formData,
+        price: Number(formData.price)
+      };
+
       if (editingProduct) {
-        // Note: Update endpoint not in Postman collection
-        // Just update in UI for now
-        setProducts(
-          products.map((p) =>
-            p.id === editingProduct.id
-              ? { ...editingProduct, ...formData }
-              : p
-          )
-        );
+        await productsApi.update(editingProduct.id, payload);
       } else {
-        // Create new product
-        const newProduct = await productsApi.create(formData);
-        const displayProduct = {
-          ...newProduct,
-          id: newProduct._id || newProduct.id || Date.now().toString(),
-        };
-        setProducts([...products, displayProduct]);
+        await productsApi.create(payload);
       }
+      fetchProducts();
       handleCloseModal();
     } catch (err: any) {
       console.error('Error saving product:', err);
@@ -108,13 +103,11 @@ export function ProductsManagement() {
     setFormData({
       name: '',
       description: '',
-      pricing: 0,
+      price: 0,
       category: 'Template',
       features: [],
-      images: [],
     });
     setFeatureInput('');
-    setImageInput('');
   };
 
   const addFeature = () => {
@@ -134,23 +127,6 @@ export function ProductsManagement() {
     });
   };
 
-  const addImage = () => {
-    if (imageInput.trim()) {
-      setFormData({
-        ...formData,
-        images: [...formData.images, imageInput.trim()],
-      });
-      setImageInput('');
-    }
-  };
-
-  const removeImage = (index: number) => {
-    setFormData({
-      ...formData,
-      images: formData.images.filter((_, i) => i !== index),
-    });
-  };
-
   const columns = [
     {
       key: 'name',
@@ -167,7 +143,7 @@ export function ProductsManagement() {
       ),
     },
     {
-      key: 'pricing',
+      key: 'price',
       label: 'Price',
       render: (value: number) => (
         <span className="text-green-400 font-bold">${value}</span>
@@ -186,7 +162,7 @@ export function ProductsManagement() {
       key: 'features',
       label: 'Features',
       render: (value: string[]) => (
-        <span className="text-gray-400">{value.length} features</span>
+        <span className="text-gray-400">{value ? value.length : 0} features</span>
       ),
     },
   ];
@@ -235,7 +211,7 @@ export function ProductsManagement() {
           color="from-blue-500 to-cyan-500" />
         <ManagementStatsCard
           title="Total Revenue"
-          value={`$${products.reduce((sum, p) => sum + p.pricing, 0).toFixed(2)}`}
+          value={`$${products.reduce((sum, p) => sum + (p.price || 0), 0).toFixed(2)}`}
           icon={Package}
           color="from-green-500 to-emerald-500" />
         <ManagementStatsCard
@@ -299,9 +275,9 @@ export function ProductsManagement() {
               <input
                 type="number"
                 step="0.01"
-                value={formData.pricing}
+                value={formData.price}
                 onChange={(e) =>
-                  setFormData({ ...formData, pricing: parseFloat(e.target.value) || 0 })
+                  setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="49.99"
@@ -356,43 +332,6 @@ export function ProductsManagement() {
                     ×
                   </button>
                 </span>
-              ))}
-            </div>
-          </div>
-
-          {/* Images */}
-          <div className="space-y-2">
-            <label className="text-sm text-gray-400 font-medium">
-              Images (URLs)
-            </label>
-            <div className="flex gap-2">
-              <input
-                type="url"
-                value={imageInput}
-                onChange={(e) => setImageInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addImage())}
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                placeholder="http://example.com/img.png" />
-              <button
-                type="button"
-                onClick={addImage}
-                className="px-4 py-3 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors">
-                Add
-              </button>
-            </div>
-            <div className="space-y-2 mt-2">
-              {formData.images.map((img, i) => (
-                <div
-                  key={i}
-                  className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
-                  <span className="flex-1 text-white text-sm truncate">{img}</span>
-                  <button
-                    type="button"
-                    onClick={() => removeImage(i)}
-                    className="text-red-500 hover:text-red-400">
-                    ×
-                  </button>
-                </div>
               ))}
             </div>
           </div>

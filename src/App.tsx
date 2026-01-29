@@ -9,6 +9,7 @@ import {
   'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 // Dashboard Layout & Auth
+import { SignupPage } from './pages/dashboard/SignupPage';
 import { LoginPage } from './pages/dashboard/LoginPage';
 import { DashboardLayout } from './pages/dashboard/DashboardLayout';
 // Analytics Pages
@@ -31,6 +32,7 @@ import { LeadManagement } from './pages/dashboard/LeadManagement';
 import { CampaignIntegration } from './pages/dashboard/CampaignIntegration';
 // Settings
 import { SettingsPage } from './pages/dashboard/SettingsPage';
+
 function ScrollToTop() {
   const { pathname } = useLocation();
   useEffect(() => {
@@ -47,6 +49,7 @@ export function App() {
         <Routes>
           {/* Auth Route */}
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignupPage />} />
 
 
           {/* Dashboard Routes */}

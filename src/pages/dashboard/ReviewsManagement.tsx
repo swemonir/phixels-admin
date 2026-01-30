@@ -1,57 +1,23 @@
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Plus, Star } from 'lucide-react';
 import { DataTable } from '../../components/dashboard/DataTable';
 import { ContentModal } from '../../components/dashboard/ContentModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
 import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
-interface Review {
+import { reviewsApi } from '../../services/api';
+import type { Review } from '../../types/types';
+
+interface ReviewDisplay extends Review {
   id: string;
-  name: string;
-  role: string;
-  image: string;
-  rating: number;
-  review: string;
-  project: string;
-  budget: string;
-  duration: string;
-  summary: string;
 }
-const mockReviews: Review[] = [
-{
-  id: '1',
-  name: 'Sarah Mitchell',
-  role: 'CEO, TechVenture Inc',
-  image:
-  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&q=80',
-  rating: 5,
-  review:
-  'Working with this team transformed our digital presence completely. They delivered a sophisticated e-commerce platform that increased our conversion rate by 145% within the first quarter. Their attention to detail and commitment to our success was exceptional.',
-  project: 'E-commerce Platform Development',
-  budget: '$35,000',
-  duration: '3 months',
-  summary:
-  'Custom React-based e-commerce solution with advanced inventory management, payment gateway integration, and real-time analytics dashboard.'
-},
-{
-  id: '2',
-  name: 'Michael Chen',
-  role: 'Founder, FinanceFlow',
-  image:
-  'https://images.unsplash.com/photo-1560250097-0b93528c311a?w=400&h=400&fit=crop&q=80',
-  rating: 5,
-  review:
-  'The mobile app they built exceeded all our expectations. The user experience is seamless, and our customer engagement has tripled since launch. They understood our vision perfectly and delivered a product that truly stands out in the market.',
-  project: 'Financial Management Mobile App',
-  budget: '$42,000',
-  duration: '4 months',
-  summary:
-  'Cross-platform mobile application with secure authentication, real-time transaction tracking, budget planning tools, and comprehensive financial reporting.'
-}];
 
 export function ReviewsManagement() {
-  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [reviews, setReviews] = useState<ReviewDisplay[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingReview, setEditingReview] = useState<Review | null>(null);
+  const [editingReview, setEditingReview] = useState<ReviewDisplay | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const [formData, setFormData] = useState({
     name: '',
     role: '',
@@ -63,39 +29,78 @@ export function ReviewsManagement() {
     duration: '',
     summary: ''
   });
-  const handleEdit = (review: Review) => {
+
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const data = await reviewsApi.getAll();
+      const displayData = data.map(r => ({
+        ...r,
+        id: r._id,
+      }));
+      setReviews(displayData);
+    } catch (err: any) {
+      console.error('Error fetching reviews:', err);
+      // Fallback for demo purposes if API fails (since it might not truly exist on backend yet)
+      setError('Failed to load reviews. Backend might be missing this endpoint.');
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleEdit = (review: ReviewDisplay) => {
     setEditingReview(review);
-    setFormData(review);
+    setFormData({
+      name: review.name,
+      role: review.role,
+      image: review.image,
+      rating: review.rating,
+      review: review.review,
+      project: review.project,
+      budget: review.budget,
+      duration: review.duration,
+      summary: review.summary
+    });
     setIsModalOpen(true);
   };
-  const handleDelete = (review: Review) => {
+
+  const handleDelete = async (review: ReviewDisplay) => {
     if (confirm(`Delete review from "${review.name}"?`)) {
-      setReviews(reviews.filter((r) => r.id !== review.id));
+      try {
+        await reviewsApi.delete(review.id);
+        setReviews(reviews.filter((r) => r.id !== review.id));
+      } catch (err: any) {
+        console.error('Error deleting review:', err);
+        alert(err.message || 'Failed to delete review');
+      }
     }
   };
-  const handleSave = () => {
-    if (editingReview) {
-      setReviews(
-        reviews.map((r) =>
-        r.id === editingReview.id ?
-        {
-          ...formData,
-          id: r.id
-        } :
-        r
-        )
-      );
-    } else {
-      setReviews([
-      ...reviews,
-      {
-        ...formData,
-        id: Date.now().toString()
-      }]
-      );
+
+  const handleSave = async () => {
+    try {
+      setError(null);
+      const payload = { ...formData };
+
+      if (editingReview) {
+        await reviewsApi.update(editingReview.id, payload);
+        fetchReviews();
+      } else {
+        await reviewsApi.create(payload);
+        fetchReviews();
+      }
+      handleCloseModal();
+    } catch (err: any) {
+      console.error('Error saving review:', err);
+      setError(err.message || 'Failed to save review');
     }
-    handleCloseModal();
   };
+
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingReview(null);
@@ -111,16 +116,17 @@ export function ReviewsManagement() {
       summary: ''
     });
   };
+
   const columns = [
-  {
-    key: 'name',
-    label: 'Reviewer',
-    render: (value: string, row: Review) =>
-    <div className="flex items-center gap-3">
+    {
+      key: 'name',
+      label: 'Reviewer',
+      render: (value: string, row: ReviewDisplay) =>
+        <div className="flex items-center gap-3">
           <img
-        src={row.image}
-        alt={value}
-        className="w-12 h-12 rounded-full object-cover" />
+            src={row.image}
+            alt={value}
+            className="w-12 h-12 rounded-full object-cover" />
 
           <div>
             <div className="font-bold text-white">{value}</div>
@@ -128,47 +134,56 @@ export function ReviewsManagement() {
           </div>
         </div>
 
-  },
-  {
-    key: 'rating',
-    label: 'Rating',
-    render: (value: number) =>
-    <div className="flex gap-1">
+    },
+    {
+      key: 'rating',
+      label: 'Rating',
+      render: (value: number) =>
+        <div className="flex gap-1">
           {[...Array(5)].map((_, i) =>
-      <Star
-        key={i}
-        size={14}
-        className={
-        i < value ? 'fill-yellow-400 text-yellow-400' : 'text-gray-600'
-        } />
+            <Star
+              key={i}
+              size={14}
+              className={
+                i < value ? 'fill-yellow-400 text-yellow-400' : 'text-gray-600'
+              } />
 
-      )}
+          )}
         </div>
 
-  },
-  {
-    key: 'project',
-    label: 'Project',
-    render: (value: string) =>
-    <span className="text-sm text-gray-300">{value}</span>
+    },
+    {
+      key: 'project',
+      label: 'Project',
+      render: (value: string) =>
+        <span className="text-sm text-gray-300">{value}</span>
 
-  },
-  {
-    key: 'budget',
-    label: 'Budget',
-    render: (value: string) =>
-    <span className="font-bold text-[color:var(--vibrant-green)]">
+    },
+    {
+      key: 'budget',
+      label: 'Budget',
+      render: (value: string) =>
+        <span className="font-bold text-[color:var(--vibrant-green)]">
           {value}
         </span>
 
-  }];
+    }];
 
   const averageRating =
-  reviews.length > 0 ?
-  (
-  reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).
-  toFixed(1) :
-  '0.0';
+    reviews.length > 0 ?
+      (
+        reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).
+        toFixed(1) :
+      '0.0';
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-white text-lg">Loading reviews...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -188,6 +203,12 @@ export function ReviewsManagement() {
           Add Review
         </button>
       </div>
+
+      {error && (
+        <div className="bg-red-500/20 border border-red-500 rounded-xl p-4 text-red-400">
+          {error}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <ManagementStatsCard
@@ -235,10 +256,10 @@ export function ReviewsManagement() {
                 type="text"
                 value={formData.name}
                 onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  name: e.target.value
-                })
+                  setFormData({
+                    ...formData,
+                    name: e.target.value
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="Sarah Mitchell"
@@ -253,10 +274,10 @@ export function ReviewsManagement() {
                 type="text"
                 value={formData.role}
                 onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  role: e.target.value
-                })
+                  setFormData({
+                    ...formData,
+                    role: e.target.value
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="CEO, TechVenture Inc"
@@ -271,24 +292,24 @@ export function ReviewsManagement() {
             </label>
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map((star) =>
-              <button
-                key={star}
-                type="button"
-                onClick={() =>
-                setFormData({
-                  ...formData,
-                  rating: star
-                })
-                }
-                className="p-2 rounded-lg hover:bg-white/10 transition-colors">
+                <button
+                  key={star}
+                  type="button"
+                  onClick={() =>
+                    setFormData({
+                      ...formData,
+                      rating: star
+                    })
+                  }
+                  className="p-2 rounded-lg hover:bg-white/10 transition-colors">
 
                   <Star
-                  size={24}
-                  className={
-                  star <= formData.rating ?
-                  'fill-yellow-400 text-yellow-400' :
-                  'text-gray-600'
-                  } />
+                    size={24}
+                    className={
+                      star <= formData.rating ?
+                        'fill-yellow-400 text-yellow-400' :
+                        'text-gray-600'
+                    } />
 
                 </button>
               )}
@@ -302,10 +323,10 @@ export function ReviewsManagement() {
             <textarea
               value={formData.review}
               onChange={(e) =>
-              setFormData({
-                ...formData,
-                review: e.target.value
-              })
+                setFormData({
+                  ...formData,
+                  review: e.target.value
+                })
               }
               rows={4}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none resize-none"
@@ -323,10 +344,10 @@ export function ReviewsManagement() {
                 type="text"
                 value={formData.project}
                 onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  project: e.target.value
-                })
+                  setFormData({
+                    ...formData,
+                    project: e.target.value
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="E-commerce Platform"
@@ -341,10 +362,10 @@ export function ReviewsManagement() {
                 type="text"
                 value={formData.budget}
                 onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  budget: e.target.value
-                })
+                  setFormData({
+                    ...formData,
+                    budget: e.target.value
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="$35,000"
@@ -359,10 +380,10 @@ export function ReviewsManagement() {
                 type="text"
                 value={formData.duration}
                 onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  duration: e.target.value
-                })
+                  setFormData({
+                    ...formData,
+                    duration: e.target.value
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="3 months"
@@ -378,10 +399,10 @@ export function ReviewsManagement() {
             <textarea
               value={formData.summary}
               onChange={(e) =>
-              setFormData({
-                ...formData,
-                summary: e.target.value
-              })
+                setFormData({
+                  ...formData,
+                  summary: e.target.value
+                })
               }
               rows={3}
               className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none resize-none"
@@ -393,10 +414,10 @@ export function ReviewsManagement() {
           <ImageUploadField
             value={formData.image}
             onChange={(url) =>
-            setFormData({
-              ...formData,
-              image: url
-            })
+              setFormData({
+                ...formData,
+                image: url
+              })
             }
             label="Client Photo *" />
 

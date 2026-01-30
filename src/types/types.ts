@@ -74,13 +74,26 @@ export interface PortfolioItem {
 export interface CaseStudy {
   _id: string;
   title: string;
-  client?: string;
-  challenge?: string;
-  solution?: string;
-  results?: string;
-  technologies?: string[];
+  client: string;
+  category: string;
+  challenge: string;
+  solution: string;
+  result: string;
+  image: string;
+  link: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface CreateCaseStudyPayload {
+  title: string;
+  client: string;
+  category: string;
+  challenge: string;
+  solution: string;
+  result: string;
+  image: string;
+  link: string;
 }
 
 // Products
@@ -111,7 +124,7 @@ export interface Service {
   updatedAt?: string;
 }
 
-// Careers (Note: Not in Postman collection - might need verification)
+// Careers
 export interface Career {
   _id: string;
   jobTitle: string;
@@ -119,9 +132,54 @@ export interface Career {
   location: string;
   description: string;
   requirements: string[];
+  responsibilities: string[];
+  salaryRange: string;
+  deadline: string;
+  applicationEmail: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateCareerPayload {
+  jobTitle: string;
+  jobType: string;
+  location: string;
+  description: string;
+  requirements: string[];
+  responsibilities: string[];
+  salaryRange: string;
+  deadline: string;
+  applicationEmail: string;
+}
+
+
+// Reviews
+export interface Review {
+  _id: string;
+  name: string;
+  role: string;
+  image: string;
+  rating: number;
+  review: string;
+  project: string;
+  budget: string;
+  duration: string;
+  summary: string;
   isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface CreateReviewPayload {
+  name: string;
+  role: string;
+  image: string;
+  rating: number;
+  review: string;
+  project: string;
+  budget: string;
+  duration: string;
+  summary: string;
 }
 
 // API Response wrapper

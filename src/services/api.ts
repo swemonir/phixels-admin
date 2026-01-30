@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from 'axios';
 import type {
     Product, Service, Career, PortfolioItem, Blog, CaseStudy, MailLog, MailPayload, CreateBlogPayload,
-    AuthResponse
+    AuthResponse, Review
 } from '../types/types';
 
 // Base URL from Postman collection
@@ -65,7 +65,10 @@ export const authApi = {
         return getData<AuthResponse>(response);
     },
     verifyEmail: async (data: { email: string; verificationCode: string }) => {
-        const response = await apiClient.post('/auth/verify', data);
+        const response = await apiClient.post('/auth/verify', {
+            email: data.email,
+            code: data.verificationCode
+        });
         return getData(response);
     },
     logout: async () => {
@@ -99,6 +102,30 @@ export const mailApi = {
     getLogs: async (): Promise<MailLog[]> => {
         const response = await apiClient.get('/mail/logs');
         return getData<MailLog[]>(response);
+    }
+};
+
+// Reviews API
+export const reviewsApi = {
+    create: async (data: Omit<Review, '_id'>) => {
+        const response = await apiClient.post('/reviews', data);
+        return getData<Review>(response);
+    },
+    getAll: async (): Promise<Review[]> => {
+        const response = await apiClient.get('/reviews');
+        return getData<Review[]>(response);
+    },
+    getOne: async (id: string): Promise<Review> => {
+        const response = await apiClient.get(`/reviews/${id}`);
+        return getData<Review>(response);
+    },
+    update: async (id: string, data: Partial<Review>) => {
+        const response = await apiClient.patch(`/reviews/${id}`, data);
+        return getData<Review>(response);
+    },
+    delete: async (id: string) => {
+        const response = await apiClient.delete(`/reviews/${id}`);
+        return getData(response);
     }
 };
 

@@ -8,8 +8,12 @@ export interface User {
 }
 
 export interface AuthResponse {
-  token: string;
-  user: User;
+  accessToken?: string;
+  user?: User;
+  data?: {
+    accessToken: string;
+    user: User;
+  };
 }
 
 // Mail
@@ -33,8 +37,10 @@ export interface MailLog {
 export interface Blog {
   _id: string;
   title: string;
-  content: string;
-  author: string;
+  writer: string;
+  readingTime: string;
+  details: string;
+  tags: string[];
   image?: string; // URL or path
   createdAt?: string;
   updatedAt?: string;
@@ -42,8 +48,10 @@ export interface Blog {
 
 export interface CreateBlogPayload {
   title: string;
-  content: string;
-  author: string;
+  writer: string;
+  readingTime: string;
+  details: string;
+  tags: string[];
   image?: File;
 }
 
@@ -54,10 +62,10 @@ export interface PortfolioItem {
   client: string;
   category: string;
   details: string;
-  usedTechnology: string[];
-  activeUsers?: number;
-  imageLink: string;
-  liveSiteLink?: string;
+  technology: string[];
+  activeUsers?: string;
+  image: string;
+  liveLink?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -80,9 +88,12 @@ export interface Product {
   _id: string;
   name: string;
   description: string;
-  price: number;
-  category: string;
   features: string[];
+  pricing: number;
+  demoLink?: string;
+  images?: string[];
+  category: string;
+  isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -90,24 +101,25 @@ export interface Product {
 // Services
 export interface Service {
   _id: string;
-  name: string;
+  title: string;
   description: string;
-  category?: string;
+  icon?: string;
   features?: string[];
-  pricing?: string;
+  images?: string[];
+  isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
 
-// Careers
+// Careers (Note: Not in Postman collection - might need verification)
 export interface Career {
   _id: string;
-  title: string;
-  department?: string;
+  jobTitle: string;
+  jobType: string;
   location: string;
-  type?: string;
-  description?: string;
+  description: string;
   requirements: string[];
+  isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }

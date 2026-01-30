@@ -103,16 +103,17 @@ export function BlogManagement() {
   // State for form fields matching API + extra UI fields
   const [postForm, setPostForm] = useState({
     title: '',
-    excerpt: '', // Not in API, but in UI. I'll keep it in local state or mapped to content?
-    category: 'Mobile', // Not in API directly?
+    excerpt: '', // Not in API, but in UI
+    category: 'Mobile',
     date: new Date().toISOString().split('T')[0],
     readTime: '5 min',
     image: '',
     slug: '',
-    content: '',
+    writer: 'Admin',
+    readingTime: '5 min',
+    details: '',
     tags: [] as string[],
-    status: 'draft' as 'published' | 'draft',
-    author: 'Admin'
+    status: 'draft' as 'published' | 'draft'
   });
 
   const [tagInput, setTagInput] = useState('');
@@ -129,13 +130,12 @@ export function BlogManagement() {
         ...p,
         id: p._id,
         // Map missing UI fields from available API data or defaults
-        excerpt: p.content.substring(0, 100) + '...',
-        category: 'Uncategorized', // API doesn't seem to return category?
+        excerpt: p.details.substring(0, 100) + '...',
+        category: 'Uncategorized', // API doesn't return category
         date: p.createdAt || new Date().toISOString(),
-        readTime: '5 min',
+        readTime: p.readingTime || '5 min',
         slug: p.title.toLowerCase().replace(/ /g, '-'),
-        tags: [],
-        status: 'published' as const // API data implies existing posts are valid
+        status: 'published' as const
       }));
       setPosts(displayData);
     } catch (err: any) {
@@ -156,10 +156,11 @@ export function BlogManagement() {
       readTime: post.readTime,
       image: post.image || '',
       slug: post.slug,
-      content: post.content,
+      writer: post.writer,
+      readingTime: post.readingTime || '5 min',
+      details: post.details,
       tags: post.tags,
-      status: post.status,
-      author: post.author
+      status: post.status
     });
     setIsModalOpen(true);
   };
@@ -186,8 +187,10 @@ export function BlogManagement() {
 
       const payload: any = {
         title: postForm.title,
-        content: postForm.content,
-        author: postForm.author,
+        writer: postForm.writer,
+        readingTime: postForm.readingTime,
+        details: postForm.details,
+        tags: postForm.tags
         // image: postForm.image // If backend supports URL
       };
 
@@ -216,10 +219,11 @@ export function BlogManagement() {
       readTime: '5 min',
       image: '',
       slug: '',
-      content: '',
+      writer: 'Admin',
+      readingTime: '5 min',
+      details: '',
       tags: [],
-      status: 'draft',
-      author: 'Admin'
+      status: 'draft'
     });
     setTagInput('');
   };
@@ -475,6 +479,24 @@ export function BlogManagement() {
 
           <div className="space-y-2">
             <label className="text-sm text-gray-400 font-medium">
+              Author/Writer *
+            </label>
+            <input
+              type="text"
+              value={postForm.writer}
+              onChange={(e) =>
+                setPostForm({
+                  ...postForm,
+                  writer: e.target.value
+                })
+              }
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+              placeholder="John Doe"
+              required />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-gray-400 font-medium">
               URL Slug *
             </label>
             <input
@@ -544,11 +566,11 @@ export function BlogManagement() {
 
 
           <RichTextEditor
-            value={postForm.content}
-            onChange={(content) =>
+            value={postForm.details}
+            onChange={(details) =>
               setPostForm({
                 ...postForm,
-                content
+                details
               })
             }
             label="Post Content *"

@@ -23,12 +23,12 @@ export function PortfolioManagement() {
       setLoading(true);
       setError(null);
       const data = await portfolioApi.getAll();
-      console.log(data);
-      const displayData = data.map(p => ({
-        ...p,
-        id: p._id || p.id || '',
+      // Map _id to id for DataTable compatibility
+      const portfolioWithIds = data.map(item => ({
+        ...item,
+        id: item._id
       }));
-      setItems(displayData);
+      setItems(portfolioWithIds);
     } catch (err: any) {
       console.error('Error fetching portfolio:', err);
       setError(err.message || 'Failed to load portfolio');
@@ -71,7 +71,7 @@ export function PortfolioManagement() {
       label: 'Key Metric',
     },
     {
-      key: 'stack',
+      key: 'technology',
       label: 'Tech Stack',
       render: (value: string[]) => (
         <div className="flex flex-wrap gap-1">

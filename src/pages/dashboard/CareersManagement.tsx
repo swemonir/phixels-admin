@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Plus, Users, MapPin, Briefcase } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Plus, Users, MapPin, Briefcase, Calendar, Mail } from 'lucide-react';
 import { DataTable } from '../../components/dashboard/DataTable';
 import { ContentModal } from '../../components/dashboard/ContentModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
@@ -23,8 +23,13 @@ export function CareersManagement() {
     location: 'Remote',
     description: '',
     requirements: [] as string[],
+    responsibilities: [] as string[],
+    salaryRange: '',
+    deadline: '',
+    applicationEmail: ''
   });
   const [reqInput, setReqInput] = useState('');
+  const [respInput, setRespInput] = useState('');
 
   useEffect(() => {
     fetchCareers();
@@ -37,7 +42,7 @@ export function CareersManagement() {
       const data = await careersApi.getAll();
       const displayData = data.map(c => ({
         ...c,
-        id: c._id || c.id || '',
+        id: c._id,
       }));
       setJobs(displayData);
     } catch (err: any) {
@@ -55,35 +60,40 @@ export function CareersManagement() {
       jobType: job.jobType,
       location: job.location,
       description: job.description,
-      requirements: job.requirements,
+      requirements: job.requirements || [],
+      responsibilities: job.responsibilities || [],
+      salaryRange: job.salaryRange || '',
+      deadline: job.deadline ? new Date(job.deadline).toISOString().split('T')[0] : '',
+      applicationEmail: job.applicationEmail || ''
     });
     setIsModalOpen(true);
   };
 
-  const handleDelete = (job: CareerDisplay) => {
+  const handleDelete = async (job: CareerDisplay) => {
     if (confirm(`Delete job "${job.jobTitle}"?`)) {
-      setJobs(jobs.filter((j) => j.id !== job.id));
+      try {
+        await careersApi.delete(job.id);
+        setJobs(jobs.filter((j) => j.id !== job.id));
+      } catch (err: any) {
+        console.error('Error deleting career:', err);
+        alert(err.message || 'Failed to delete career');
+      }
     }
   };
 
   const handleSave = async () => {
     try {
       setError(null);
+      const payload = {
+        ...formData
+      };
+
       if (editingJob) {
-        setJobs(
-          jobs.map((j) =>
-            j.id === editingJob.id
-              ? { ...editingJob, ...formData }
-              : j
-          )
-        );
+        await careersApi.update(editingJob.id, payload);
+        fetchCareers(); // Refresh list to get updated data
       } else {
-        const newCareer = await careersApi.create(formData);
-        const displayCareer = {
-          ...newCareer,
-          id: newCareer._id || newCareer.id || Date.now().toString(),
-        };
-        setJobs([...jobs, displayCareer]);
+        await careersApi.create(payload);
+        fetchCareers(); // Refresh list to get new data
       }
       handleCloseModal();
     } catch (err: any) {
@@ -101,8 +111,13 @@ export function CareersManagement() {
       location: 'Remote',
       description: '',
       requirements: [],
+      responsibilities: [],
+      salaryRange: '',
+      deadline: '',
+      applicationEmail: ''
     });
     setReqInput('');
+    setRespInput('');
   };
 
   const addRequirement = () => {
@@ -122,12 +137,36 @@ export function CareersManagement() {
     });
   };
 
+  const addResponsibility = () => {
+    if (respInput.trim()) {
+      setFormData({
+        ...formData,
+        responsibilities: [...formData.responsibilities, respInput.trim()],
+      });
+      setRespInput('');
+    }
+  };
+
+  const removeResponsibility = (index: number) => {
+    setFormData({
+      ...formData,
+      responsibilities: formData.responsibilities.filter((_, i) => i !== index),
+    });
+  };
+
   const columns = [
     {
       key: 'jobTitle',
       label: 'Job Title',
       render: (value: string) => (
         <span className="font-bold text-white">{value}</span>
+      ),
+    },
+    {
+      key: 'salaryRange',
+      label: 'Salary',
+      render: (value: string) => (
+        <span className="text-sm text-green-400">{value}</span>
       ),
     },
     {
@@ -140,26 +179,21 @@ export function CareersManagement() {
       ),
     },
     {
-      key: 'location',
-      label: 'Location',
+      key: 'deadline',
+      label: 'Deadline',
       render: (value: string) => (
         <span className="flex items-center gap-1 text-gray-300">
-          <MapPin size={14} /> {value}
+          <Calendar size={14} /> {value ? new Date(value).toLocaleDateString() : 'N/A'}
         </span>
       ),
     },
     {
-      key: 'description',
-      label: 'Description',
+      key: 'applicationEmail',
+      label: 'Contact',
       render: (value: string) => (
-        <span className="text-gray-400 line-clamp-1">{value}</span>
-      ),
-    },
-    {
-      key: 'requirements',
-      label: 'Requirements',
-      render: (value: string[]) => (
-        <span className="text-gray-400">{value.length} requirements</span>
+        <span className="flex items-center gap-1 text-gray-400 text-xs">
+          <Mail size={12} /> {value}
+        </span>
       ),
     },
   ];
@@ -167,7 +201,10 @@ export function CareersManagement() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="text-white text-lg">Loading careers...</div>
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[color:var(--bright-red)] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="text-white text-lg">Loading careers...</div>
+        </div>
       </div>
     );
   }
@@ -271,6 +308,48 @@ export function CareersManagement() {
                 placeholder="Remote"
                 required />
             </div>
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400 font-medium">
+                Salary Range *
+              </label>
+              <input
+                type="text"
+                value={formData.salaryRange}
+                onChange={(e) =>
+                  setFormData({ ...formData, salaryRange: e.target.value })
+                }
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                placeholder="$60,000 - $80,000"
+                required />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400 font-medium">
+                Deadline *
+              </label>
+              <input
+                type="date"
+                value={formData.deadline}
+                onChange={(e) =>
+                  setFormData({ ...formData, deadline: e.target.value })
+                }
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                required />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-gray-400 font-medium">
+              Application Email *
+            </label>
+            <input
+              type="email"
+              value={formData.applicationEmail}
+              onChange={(e) =>
+                setFormData({ ...formData, applicationEmail: e.target.value })
+              }
+              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+              placeholder="careers@phixels.io"
+              required />
           </div>
 
           <RichTextEditor
@@ -281,6 +360,7 @@ export function CareersManagement() {
             label="Job Description *"
             placeholder="Describe the role, team, and what makes this opportunity exciting..." />
 
+          {/* Requirements */}
           <div className="space-y-2">
             <label className="text-sm text-gray-400 font-medium">
               Requirements
@@ -318,6 +398,46 @@ export function CareersManagement() {
               ))}
             </div>
           </div>
+
+          {/* Responsibilities */}
+          <div className="space-y-2">
+            <label className="text-sm text-gray-400 font-medium">
+              Responsibilities
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={respInput}
+                onChange={(e) => setRespInput(e.target.value)}
+                onKeyPress={(e) =>
+                  e.key === 'Enter' && (e.preventDefault(), addResponsibility())
+                }
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                placeholder="Add responsibility (press Enter)" />
+              <button
+                type="button"
+                onClick={addResponsibility}
+                className="px-4 py-3 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors">
+                Add
+              </button>
+            </div>
+            <div className="space-y-2 mt-2">
+              {formData.responsibilities.map((req, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 p-2 bg-white/5 rounded-lg">
+                  <span className="flex-1 text-white text-sm">{req}</span>
+                  <button
+                    type="button"
+                    onClick={() => removeResponsibility(i)}
+                    className="text-red-500 hover:text-red-400">
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       </ContentModal>
     </div>

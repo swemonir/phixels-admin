@@ -132,11 +132,22 @@ export function LoginPage() {
 
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
+            <div className="text-center mt-6">
+              <p className="text-gray-400">
+                Don't have an account?{' '}
+                <span
+                  onClick={() => navigate('/signup')}
+                  className="text-[color:var(--bright-red)] cursor-pointer hover:underline font-bold"
+                >
+                  Sign up
+                </span>
+              </p>
+            </div>
           </form>
 
 
         </div>
-      </motion.div>
-    </div>);
+      </motion.div >
+    </div >);
 
 }

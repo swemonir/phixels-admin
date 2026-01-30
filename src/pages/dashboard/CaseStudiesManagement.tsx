@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, FileText, Star } from 'lucide-react';
+import { Plus, FileText, Link as LinkIcon, ExternalLink } from 'lucide-react';
 import { DataTable } from '../../components/dashboard/DataTable';
 import { ContentModal } from '../../components/dashboard/ContentModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
@@ -10,10 +10,6 @@ import type { CaseStudy } from '../../types/types';
 
 interface CaseStudyDisplay extends CaseStudy {
   id: string;
-  category: string;
-  featured: boolean;
-  image: string;
-  overview: string;
 }
 
 export function CaseStudiesManagement() {
@@ -25,19 +21,17 @@ export function CaseStudiesManagement() {
   const [form, setForm] = useState({
     title: '',
     client: '',
-    overview: '',
+    category: 'Web Development',
     challenge: '',
     solution: '',
-    results: '',
-    technologies: [] as string[],
+    result: '',
     image: '',
-    featured: false,
-    category: 'FinTech' // Default
+    link: ''
   });
 
   const categories = [
-    'FinTech', 'Healthcare', 'E-Commerce', 'Education',
-    'Energy', 'Travel', 'Manufacturing', 'Real Estate'
+    'Web Development', 'Mobile App', 'UI/UX Design', 'Digital Marketing',
+    'SEO', 'Content Writing', 'Consulting'
   ];
 
   useEffect(() => {
@@ -51,16 +45,8 @@ export function CaseStudiesManagement() {
       const displayData = data.map((s: any) => ({
         ...s,
         id: s._id,
-        client: s.client || '',
-        title: s.title || '',
-        category: 'Uncategorized',
-        featured: false,
-        image: s.image || '',
-        overview: '', // API 'overview' might be missing
-        challenge: s.challenge || '',
-        solution: s.solution || '',
-        results: s.results || '',
-        technologies: s.technologies || []
+        category: s.category || 'Uncategorized',
+        result: s.result || '',
       }));
       setStudies(displayData);
     } catch (err) {
@@ -73,16 +59,14 @@ export function CaseStudiesManagement() {
   const handleEdit = (study: CaseStudyDisplay) => {
     setEditingStudy(study);
     setForm({
-      title: study.title || '',
-      client: study.client || '',
-      overview: study.overview || '',
-      challenge: study.challenge || '',
-      solution: study.solution || '',
-      results: study.results || '',
-      technologies: study.technologies || [],
-      image: study.image || '',
-      featured: study.featured,
-      category: study.category
+      title: study.title,
+      client: study.client,
+      category: study.category,
+      challenge: study.challenge,
+      solution: study.solution,
+      result: study.result,
+      image: study.image,
+      link: study.link
     });
     setIsModalOpen(true);
   };
@@ -101,15 +85,15 @@ export function CaseStudiesManagement() {
 
   const handleSave = async () => {
     try {
-      const payload: any = {
+      const payload = {
         title: form.title,
         client: form.client,
-        overview: form.overview,
+        category: form.category,
         challenge: form.challenge,
         solution: form.solution,
-        results: form.results,
-        technologies: form.technologies,
-        // image: form.image // map if needed
+        result: form.result,
+        image: form.image,
+        link: form.link
       };
 
       if (editingStudy) {
@@ -131,14 +115,12 @@ export function CaseStudiesManagement() {
     setForm({
       title: '',
       client: '',
-      overview: '',
+      category: 'Web Development',
       challenge: '',
       solution: '',
-      results: '',
-      technologies: [],
+      result: '',
       image: '',
-      featured: false,
-      category: 'FinTech'
+      link: ''
     });
   };
 
@@ -156,9 +138,6 @@ export function CaseStudiesManagement() {
           <div>
             <div className="font-bold text-white flex items-center gap-2">
               {value}
-              {row.featured &&
-                <Star size={14} className="fill-yellow-400 text-yellow-400" />
-              }
             </div>
             <div className="text-xs text-gray-400">{row.client}</div>
           </div>
@@ -166,7 +145,7 @@ export function CaseStudiesManagement() {
 
     },
     {
-      key: 'category', // Changed from industry if using category
+      key: 'category',
       label: 'Category',
       render: (value: string) =>
         <span className="px-2 py-1 rounded-full bg-green-500/20 text-green-400 text-xs font-bold">
@@ -175,26 +154,28 @@ export function CaseStudiesManagement() {
 
     },
     {
-      key: 'results', // Changed from result to results
+      key: 'result',
       label: 'Result',
       render: (value: string) =>
         <div className="font-bold text-[color:var(--vibrant-green)] line-clamp-2" dangerouslySetInnerHTML={{ __html: value }} />
     },
     {
-      key: 'featured',
-      label: 'Featured',
-      render: (value: boolean, row: CaseStudyDisplay) =>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            // toggleFeatured(row); // Implement toggle if needed via API update
-          }}
-          className={`px-3 py-1 rounded-full text-xs font-bold transition-colors ${value ? 'bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
-
-          {value ? 'Featured' : 'Set Featured'}
-        </button>
-
-    }];
+      key: 'link',
+      label: 'Link',
+      render: (value: string) => (
+        value ? (
+          <a
+            href={value}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-2 py-1 rounded-lg bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 transition-colors flex items-center gap-1 w-fit"
+          >
+            <ExternalLink size={14} /> Visit
+          </a>
+        ) : <span className="text-gray-600 text-xs">No Link</span>
+      ),
+    }
+  ];
 
   if (loading) {
     return <div className="text-white p-4">Loading...</div>;
@@ -224,12 +205,6 @@ export function CaseStudiesManagement() {
           value={studies.length}
           icon={FileText}
           color="from-green-500 to-emerald-500" />
-
-        <ManagementStatsCard
-          title="Featured"
-          value={studies.filter(s => s.featured).length}
-          icon={Star}
-          color="from-yellow-500 to-orange-500" />
       </div>
 
       <DataTable
@@ -319,17 +294,27 @@ export function CaseStudiesManagement() {
             }
             label="Project Thumbnail *" />
 
+          <div className="space-y-2">
+            <label className="text-sm text-gray-400 font-medium">
+              Project Link
+            </label>
+            <div className="relative">
+              <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="url"
+                value={form.link}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    link: e.target.value
+                  })
+                }
+                className="w-full bg-white/5 border border-white/10 rounded-xl pl-12 pr-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                placeholder="https://example.com/case-study"
+              />
+            </div>
+          </div>
 
-          <RichTextEditor
-            value={form.overview}
-            onChange={(val) =>
-              setForm({
-                ...form,
-                overview: val
-              })
-            }
-            label="Overview"
-            placeholder="Project overview..." />
 
           <RichTextEditor
             value={form.challenge}
@@ -354,33 +339,16 @@ export function CaseStudiesManagement() {
             placeholder="How did we solve it?..." />
 
           <RichTextEditor
-            value={form.results}
+            value={form.result}
             onChange={(val) =>
               setForm({
                 ...form,
-                results: val
+                result: val
               })
             }
             label="The Results"
             placeholder="What were the outcomes?..." />
 
-
-          <div className="space-y-2">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={form.featured}
-                onChange={(e) =>
-                  setForm({
-                    ...form,
-                    featured: e.target.checked
-                  })
-                }
-                className="rounded border-white/10 bg-white/5 text-[color:var(--bright-red)] focus:ring-[color:var(--bright-red)]" />
-
-              <span className="text-white">Feature this case study</span>
-            </label>
-          </div>
         </div>
       </ContentModal>
     </div>);

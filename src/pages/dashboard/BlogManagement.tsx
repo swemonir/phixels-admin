@@ -108,6 +108,7 @@ export function BlogManagement() {
     date: new Date().toISOString().split('T')[0],
     readTime: '5 min',
     image: '',
+    imageFile: null as File | null,
     slug: '',
     writer: 'Admin',
     readingTime: '5 min',
@@ -155,6 +156,7 @@ export function BlogManagement() {
       date: post.date,
       readTime: post.readTime,
       image: post.image || '',
+      imageFile: null,
       slug: post.slug,
       writer: post.writer,
       readingTime: post.readingTime || '5 min',
@@ -218,6 +220,7 @@ export function BlogManagement() {
       date: new Date().toISOString().split('T')[0],
       readTime: '5 min',
       image: '',
+      imageFile: null,
       slug: '',
       writer: 'Admin',
       readingTime: '5 min',
@@ -560,6 +563,12 @@ export function BlogManagement() {
               setPostForm({
                 ...postForm,
                 image: url
+              })
+            }
+            onFileChange={(file) =>
+              setPostForm({
+                ...postForm,
+                imageFile: file
               })
             }
             label="Featured Image *" />

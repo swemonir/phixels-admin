@@ -107,8 +107,10 @@ export const blogsApi = {
     create: async (data: CreateBlogPayload) => {
         const formData = new FormData();
         formData.append('title', data.title);
-        formData.append('content', data.content);
-        formData.append('author', data.author);
+        formData.append('writer', data.writer);
+        formData.append('readingTime', data.readingTime);
+        formData.append('details', data.details);
+        formData.append('tags', JSON.stringify(data.tags));
         if (data.image) {
             formData.append('image', data.image);
         }
@@ -129,8 +131,10 @@ export const blogsApi = {
     update: async (id: string, data: Partial<CreateBlogPayload>) => {
         const formData = new FormData();
         if (data.title) formData.append('title', data.title);
-        if (data.content) formData.append('content', data.content);
-        if (data.author) formData.append('author', data.author);
+        if (data.writer) formData.append('writer', data.writer);
+        if (data.readingTime) formData.append('readingTime', data.readingTime);
+        if (data.details) formData.append('details', data.details);
+        if (data.tags) formData.append('tags', JSON.stringify(data.tags));
         if (data.image) {
             formData.append('image', data.image);
         }
@@ -233,10 +237,7 @@ export const servicesApi = {
         return getData<Service>(response);
     },
     update: async (id: string, data: Partial<Service>) => {
-        // Postman says update is POST /services/:id, but typical REST is PUT/PATCH. 
-        // Postman has POST for Update Service in the list (lines 866-867).
-        // I will follow Postman.
-        const response = await apiClient.post(`/services/${id}`, data);
+        const response = await apiClient.patch(`/services/${id}`, data);
         return getData<Service>(response);
     },
     delete: async (id: string) => {

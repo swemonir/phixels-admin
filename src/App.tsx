@@ -8,6 +8,7 @@ import {
 } from
   'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
+import { ProtectedRoute } from './components/ProtectedRoute';
 // Dashboard Layout & Auth
 import { SignupPage } from './pages/dashboard/SignupPage';
 import { LoginPage } from './pages/dashboard/LoginPage';
@@ -47,39 +48,41 @@ export function App() {
       <Router>
         <ScrollToTop />
         <Routes>
-          {/* Auth Route */}
+          {/* Public Auth Routes */}
           <Route path="/login" element={<LoginPage />} />
           <Route path="/signup" element={<SignupPage />} />
 
 
-          {/* Dashboard Routes */}
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            {/* Analytics */}
-            <Route index element={<AnalyticsDashboard />} />
-            <Route path="funnel" element={<ConversionFunnel />} />
-            <Route path="geographic" element={<GeographicAnalytics />} />
-            <Route path="traffic" element={<TrafficSources />} />
-            <Route path="realtime" element={<RealtimeMonitor />} />
+          {/* Protected Dashboard Routes */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<DashboardLayout />}>
+              {/* Analytics */}
+              <Route index element={<AnalyticsDashboard />} />
+              <Route path="funnel" element={<ConversionFunnel />} />
+              <Route path="geographic" element={<GeographicAnalytics />} />
+              <Route path="traffic" element={<TrafficSources />} />
+              <Route path="realtime" element={<RealtimeMonitor />} />
 
-            {/* Content Management */}
-            <Route path="blog" element={<BlogManagement />} />
-            <Route path="case-studies" element={<CaseStudiesManagement />} />
-            <Route path="portfolio" element={<PortfolioManagement />} />
-            <Route path="products" element={<ProductsManagement />} />
-            <Route path="services" element={<ServicesManagement />} />
-            <Route path="reviews" element={<ReviewsManagement />} />
-            <Route path="careers" element={<CareersManagement />} />
+              {/* Content Management */}
+              <Route path="blog" element={<BlogManagement />} />
+              <Route path="case-studies" element={<CaseStudiesManagement />} />
+              <Route path="portfolio" element={<PortfolioManagement />} />
+              <Route path="products" element={<ProductsManagement />} />
+              <Route path="services" element={<ServicesManagement />} />
+              <Route path="reviews" element={<ReviewsManagement />} />
+              <Route path="careers" element={<CareersManagement />} />
 
-            {/* Marketing */}
-            <Route path="leads" element={<LeadManagement />} />
-            <Route path="campaigns" element={<CampaignAnalytics />} />
-            <Route
-              path="campaigns/integration"
-              element={<CampaignIntegration />} />
+              {/* Marketing */}
+              <Route path="leads" element={<LeadManagement />} />
+              <Route path="campaigns" element={<CampaignAnalytics />} />
+              <Route
+                path="campaigns/integration"
+                element={<CampaignIntegration />} />
 
 
-            {/* Settings */}
-            <Route path="settings" element={<SettingsPage />} />
+              {/* Settings */}
+              <Route path="settings" element={<SettingsPage />} />
+            </Route>
           </Route>
 
           {/* Redirect root to login */}

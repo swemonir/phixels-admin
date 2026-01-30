@@ -20,7 +20,7 @@ export function ProductsManagement() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
-    price: 0,
+    pricing: 0,
     category: 'Template',
     features: [] as string[],
   });
@@ -39,7 +39,7 @@ export function ProductsManagement() {
       const displayData = data.map(p => ({
         ...p,
         id: p._id || '',
-        price: p.price || 0,
+        pricing: p.pricing || 0,
         category: p.category || 'Template',
         features: p.features || [],
       }));
@@ -57,7 +57,7 @@ export function ProductsManagement() {
     setFormData({
       name: product.name,
       description: product.description,
-      price: product.price,
+      pricing: product.pricing,
       category: product.category,
       features: product.features,
     });
@@ -81,7 +81,7 @@ export function ProductsManagement() {
       setError(null);
       const payload = {
         ...formData,
-        price: Number(formData.price)
+        pricing: Number(formData.pricing)
       };
 
       if (editingProduct) {
@@ -103,7 +103,7 @@ export function ProductsManagement() {
     setFormData({
       name: '',
       description: '',
-      price: 0,
+      pricing: 0,
       category: 'Template',
       features: [],
     });
@@ -143,7 +143,7 @@ export function ProductsManagement() {
       ),
     },
     {
-      key: 'price',
+      key: 'pricing',
       label: 'Price',
       render: (value: number) => (
         <span className="text-green-400 font-bold">${value}</span>
@@ -211,7 +211,7 @@ export function ProductsManagement() {
           color="from-blue-500 to-cyan-500" />
         <ManagementStatsCard
           title="Total Revenue"
-          value={`$${products.reduce((sum, p) => sum + (p.price || 0), 0).toFixed(2)}`}
+          value={`$${products.reduce((sum, p) => sum + (p.pricing || 0), 0).toFixed(2)}`}
           icon={Package}
           color="from-green-500 to-emerald-500" />
         <ManagementStatsCard
@@ -275,9 +275,9 @@ export function ProductsManagement() {
               <input
                 type="number"
                 step="0.01"
-                value={formData.price}
+                value={formData.pricing}
                 onChange={(e) =>
-                  setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })
+                  setFormData({ ...formData, pricing: parseFloat(e.target.value) || 0 })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="49.99"

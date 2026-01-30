@@ -17,10 +17,8 @@ export function ServicesManagement() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
-        name: '',
+        title: '',
         description: '',
-        category: '',
-        pricing: '',
         features: [] as string[],
     });
     const [featureInput, setFeatureInput] = useState('');
@@ -37,8 +35,6 @@ export function ServicesManagement() {
             const displayData = data.map(s => ({
                 ...s,
                 id: s._id || '',
-                category: s.category || '',
-                pricing: s.pricing || '',
                 features: s.features || []
             }));
             setServices(displayData);
@@ -53,24 +49,22 @@ export function ServicesManagement() {
     const handleEdit = (service: ServiceDisplay) => {
         setEditingService(service);
         setFormData({
-            name: service.name,
+            title: service.title,
             description: service.description,
-            category: service.category || '',
-            pricing: service.pricing || '',
             features: service.features || [],
         });
         setIsModalOpen(true);
     };
 
     const handleDelete = async (service: ServiceDisplay) => {
-        if (confirm(`Are you sure you want to delete "${service.name}"?`)) {
-            try {
-                await servicesApi.delete(service.id);
-                setServices(services.filter((s) => s.id !== service.id));
-            } catch (err: any) {
-                console.error('Error deleting service:', err);
-                alert(err.message || 'Failed to delete service');
-            }
+        if (!window.confirm(`Are you sure you want to delete "${service.title}"?`)) return;
+
+        try {
+            await servicesApi.delete(service.id);
+            setServices(services.filter((s) => s.id !== service.id));
+        } catch (err: any) {
+            console.error('Error deleting service:', err);
+            alert(err.message || 'Failed to delete service');
         }
     };
 
@@ -78,10 +72,8 @@ export function ServicesManagement() {
         try {
             setError(null);
             const payload = {
-                name: formData.name,
+                title: formData.title,
                 description: formData.description,
-                category: formData.category,
-                pricing: formData.pricing,
                 features: formData.features
             };
 
@@ -102,10 +94,8 @@ export function ServicesManagement() {
         setIsModalOpen(false);
         setEditingService(null);
         setFormData({
-            name: '',
+            title: '',
             description: '',
-            category: '',
-            pricing: '',
             features: [],
         });
         setFeatureInput('');
@@ -130,7 +120,7 @@ export function ServicesManagement() {
 
     const columns = [
         {
-            key: 'name',
+            key: 'title',
             label: 'Service Name',
             render: (value: string) => (
                 <span className="font-bold text-white">{value}</span>
@@ -141,29 +131,6 @@ export function ServicesManagement() {
             label: 'Description',
             render: (value: string) => (
                 <span className="text-gray-300 line-clamp-1">{value}</span>
-            ),
-        },
-        {
-            key: 'category',
-            label: 'Category',
-            render: (value: string) => (
-                <span className="px-2 py-1 rounded-full bg-purple-500/20 text-purple-400 text-xs font-bold">
-                    {value || 'N/A'}
-                </span>
-            ),
-        },
-        {
-            key: 'pricing',
-            label: 'Pricing',
-            render: (value: string) => (
-                <span className="text-green-400">{value || 'Contact'}</span>
-            ),
-        },
-        {
-            key: 'features',
-            label: 'Features',
-            render: (value: string[]) => (
-                <span className="text-gray-400">{value ? value.length : 0} features</span>
             ),
         },
     ];
@@ -246,9 +213,9 @@ export function ServicesManagement() {
                         </label>
                         <input
                             type="text"
-                            value={formData.name}
+                            value={formData.title}
                             onChange={(e) =>
-                                setFormData({ ...formData, name: e.target.value })
+                                setFormData({ ...formData, title: e.target.value })
                             }
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
                             placeholder="Web Development"
@@ -268,35 +235,6 @@ export function ServicesManagement() {
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none resize-none"
                             placeholder="Building websites and web applications"
                             required />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm text-gray-400 font-medium">
-                                Category
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.category}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, category: e.target.value })
-                                }
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                                placeholder="Development" />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-sm text-gray-400 font-medium">
-                                Pricing
-                            </label>
-                            <input
-                                type="text"
-                                value={formData.pricing}
-                                onChange={(e) =>
-                                    setFormData({ ...formData, pricing: e.target.value })
-                                }
-                                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
-                                placeholder="$5000 - $10000" />
-                        </div>
                     </div>
 
                     {/* Features */}

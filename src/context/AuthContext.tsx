@@ -13,34 +13,40 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode; }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
-
-  useEffect(() => {
+  const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('dashboard_user');
-    const savedToken = localStorage.getItem('auth_token');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error("Failed to parse user from local storage", e);
-      }
+    try {
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch (e) {
+      console.error("Failed to parse user from local storage", e);
+      return null;
     }
-    if (savedToken) {
-      setToken(savedToken);
-    }
+  });
+
+  const [token, setToken] = useState<string | null>(() => localStorage.getItem('auth_token'));
+
+  // We can keep the useEffect to handle 'storage' events or just for safety, 
+  // but with lazy init it's less critical for simple reload persistence.
+  // However, removing the initial load logic from useEffect since it's now in useState.
+  useEffect(() => {
+    // Optional: could listen to storage events here if we wanted multi-tab sync
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
       const response = await authApi.login({ email, password });
 
-      if (response && response.token && response.user) {
-        setToken(response.token);
-        setUser(response.user);
+      // Postman shows response structure: { success, statusCode, message, data: { accessToken, user } }
+      // Extract from getData which might return response.data or response.data.data
+      const accessToken = response.accessToken || response.data?.accessToken;
+      const user = response.user || response.data?.user;
 
-        localStorage.setItem('auth_token', response.token);
-        localStorage.setItem('dashboard_user', JSON.stringify(response.user));
+      if (accessToken && user) {
+        setToken(accessToken);
+        setUser(user);
+
+        localStorage.setItem('auth_token', accessToken);
+        localStorage.setItem('dashboard_user', JSON.stringify(user));
         return true;
       }
       return false;

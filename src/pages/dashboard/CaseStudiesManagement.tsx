@@ -5,6 +5,7 @@ import { ContentModal } from '../../components/dashboard/ContentModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
 import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
 import { RichTextEditor } from '../../components/dashboard/RichTextEditor';
+import { StatusModal } from '../../components/dashboard/StatusModal';
 import { caseStudiesApi } from '../../services/api';
 import type { CaseStudy } from '../../types/types';
 
@@ -17,6 +18,22 @@ export function CaseStudiesManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudy, setEditingStudy] = useState<CaseStudyDisplay | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Status Modal State
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+    action?: () => void;
+    secondaryActionLabel?: string;
+    onSecondaryAction?: () => void;
+  }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
 
   const [form, setForm] = useState({
     title: '',
@@ -49,8 +66,14 @@ export function CaseStudiesManagement() {
         result: s.result || '',
       }));
       setStudies(displayData);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'Failed to load case studies'
+      });
     } finally {
       setLoading(false);
     }
@@ -72,19 +95,49 @@ export function CaseStudiesManagement() {
   };
 
   const handleDelete = async (study: CaseStudyDisplay) => {
-    if (confirm(`Delete "${study.title}"?`)) {
-      try {
-        await caseStudiesApi.delete(study.id);
-        setStudies(studies.filter(s => s.id !== study.id));
-      } catch (err) {
-        console.error(err);
-        alert('Failed to delete');
-      }
-    }
+    setStatusModal({
+      isOpen: true,
+      type: 'error',
+      title: 'Delete Case Study',
+      message: `Are you sure you want to delete "${study.title}"?`,
+      action: async () => {
+        try {
+          await caseStudiesApi.delete(study.id);
+          setStudies(studies.filter(s => s.id !== study.id));
+          setStatusModal({
+            isOpen: true,
+            type: 'success',
+            title: 'Case Study Deleted',
+            message: `Case study "${study.title}" has been successfully deleted.`
+          });
+        } catch (err: any) {
+          console.error(err);
+          setStatusModal({
+            isOpen: true,
+            type: 'error',
+            title: 'Delete Failed',
+            message: err.message || 'Failed to delete case study. Please try again.'
+          });
+        }
+      },
+      secondaryActionLabel: 'Cancel'
+    });
   };
 
   const handleSave = async () => {
     try {
+
+      // Basic Validation
+      if (!form.title || !form.client || !form.challenge || !form.solution) {
+        setStatusModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Validation Error',
+          message: 'Please fill in all required fields (Client, Title, Challenge, Solution).'
+        });
+        return;
+      }
+
       const payload = {
         title: form.title,
         client: form.client,
@@ -98,14 +151,31 @@ export function CaseStudiesManagement() {
 
       if (editingStudy) {
         await caseStudiesApi.update(editingStudy.id, payload);
+        setStatusModal({
+          isOpen: true,
+          type: 'success',
+          title: 'Case Study Updated',
+          message: `Case study "${form.title}" has been successfully updated.`
+        });
       } else {
         await caseStudiesApi.create(payload);
+        setStatusModal({
+          isOpen: true,
+          type: 'success',
+          title: 'Case Study Added',
+          message: `Case study "${form.title}" has been successfully added.`
+        });
       }
-      fetchStudies();
+      await fetchStudies();
       handleCloseModal();
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert('Failed to save');
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Operation Failed',
+        message: err.message || 'Failed to save case study. Please try again.'
+      });
     }
   };
 
@@ -133,7 +203,11 @@ export function CaseStudiesManagement() {
           <img
             src={row.image}
             alt={value}
-            className="w-12 h-12 rounded-lg object-cover" />
+            className="w-12 h-12 rounded-lg object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48?text=Case';
+            }}
+          />
 
           <div>
             <div className="font-bold text-white flex items-center gap-2">
@@ -178,41 +252,48 @@ export function CaseStudiesManagement() {
   ];
 
   if (loading) {
-    return <div className="text-white p-4">Loading...</div>;
+    return <div className="text-white p-4">Loading case studies...</div>;
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Case Studies Management
-          </h1>
-          <p className="text-gray-400">Manage your success stories</p>
+    <>
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Case Studies Management
+            </h1>
+            <p className="text-gray-400">Manage your success stories</p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all">
+
+            <Plus size={20} />
+            Add Case Study
+          </button>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all">
 
-          <Plus size={20} />
-          Add Case Study
-        </button>
+
+
+
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <ManagementStatsCard
+            title="Total Case Studies"
+            value={studies.length}
+            icon={FileText}
+            color="from-green-500 to-emerald-500" />
+        </div>
+
+        <DataTable
+          columns={columns}
+          data={studies}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          searchable />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <ManagementStatsCard
-          title="Total Case Studies"
-          value={studies.length}
-          icon={FileText}
-          color="from-green-500 to-emerald-500" />
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={studies}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        searchable />
 
 
       <ContentModal
@@ -351,5 +432,17 @@ export function CaseStudiesManagement() {
 
         </div>
       </ContentModal>
-    </div>);
+
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+        type={statusModal.type}
+        title={statusModal.title}
+        message={statusModal.message}
+        actionLabel={statusModal.secondaryActionLabel ? 'Confirm' : undefined}
+        onAction={statusModal.action}
+        secondaryActionLabel={statusModal.secondaryActionLabel}
+      />
+    </>
+  );
 }

@@ -3,6 +3,7 @@ import { Plus, Wrench } from 'lucide-react';
 import { DataTable } from '../../components/dashboard/DataTable';
 import { ContentModal } from '../../components/dashboard/ContentModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
+import { StatusModal } from '../../components/dashboard/StatusModal';
 import { servicesApi } from '../../services/api';
 import type { Service } from '../../types/types';
 
@@ -15,13 +16,28 @@ export function ServicesManagement() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingService, setEditingService] = useState<ServiceDisplay | null>(null);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
         features: [] as string[],
     });
     const [featureInput, setFeatureInput] = useState('');
+
+    // Status Modal State
+    const [statusModal, setStatusModal] = useState<{
+        isOpen: boolean;
+        type: 'success' | 'error';
+        title: string;
+        message: string;
+        action?: () => void;
+        secondaryActionLabel?: string;
+        onSecondaryAction?: () => void;
+    }>({
+        isOpen: false,
+        type: 'success',
+        title: '',
+        message: ''
+    });
 
     useEffect(() => {
         fetchServices();
@@ -30,7 +46,6 @@ export function ServicesManagement() {
     const fetchServices = async () => {
         try {
             setLoading(true);
-            setError(null);
             const data = await servicesApi.getAll();
             const displayData = data.map(s => ({
                 ...s,
@@ -40,7 +55,12 @@ export function ServicesManagement() {
             setServices(displayData);
         } catch (err: any) {
             console.error('Error fetching services:', err);
-            setError(err.message || 'Failed to load services');
+            setStatusModal({
+                isOpen: true,
+                type: 'error',
+                title: 'Error',
+                message: err.message || 'Failed to load services'
+            });
         } finally {
             setLoading(false);
         }
@@ -57,20 +77,48 @@ export function ServicesManagement() {
     };
 
     const handleDelete = async (service: ServiceDisplay) => {
-        if (!window.confirm(`Are you sure you want to delete "${service.title}"?`)) return;
-
-        try {
-            await servicesApi.delete(service.id);
-            setServices(services.filter((s) => s.id !== service.id));
-        } catch (err: any) {
-            console.error('Error deleting service:', err);
-            alert(err.message || 'Failed to delete service');
-        }
+        setStatusModal({
+            isOpen: true,
+            type: 'error',
+            title: 'Delete Service',
+            message: `Are you sure you want to delete "${service.title}"?`,
+            action: async () => {
+                try {
+                    await servicesApi.delete(service.id);
+                    setServices(services.filter((s) => s.id !== service.id));
+                    setStatusModal({
+                        isOpen: true,
+                        type: 'success',
+                        title: 'Service Deleted',
+                        message: `"${service.title}" has been successfully deleted.`
+                    });
+                } catch (err: any) {
+                    console.error('Error deleting service:', err);
+                    setStatusModal({
+                        isOpen: true,
+                        type: 'error',
+                        title: 'Delete Failed',
+                        message: err.message || 'Failed to delete service. Please try again.'
+                    });
+                }
+            },
+            secondaryActionLabel: 'Cancel'
+        });
     };
 
     const handleSave = async () => {
         try {
-            setError(null);
+            // Basic validation
+            if (!formData.title || !formData.description) {
+                setStatusModal({
+                    isOpen: true,
+                    type: 'error',
+                    title: 'Validation Error',
+                    message: 'Please fill in all required fields (Name, Description).'
+                });
+                return;
+            }
+
             const payload = {
                 title: formData.title,
                 description: formData.description,
@@ -79,14 +127,31 @@ export function ServicesManagement() {
 
             if (editingService) {
                 await servicesApi.update(editingService.id, payload);
+                setStatusModal({
+                    isOpen: true,
+                    type: 'success',
+                    title: 'Service Updated',
+                    message: `"${formData.title}" has been successfully updated.`
+                });
             } else {
                 await servicesApi.create(payload);
+                setStatusModal({
+                    isOpen: true,
+                    type: 'success',
+                    title: 'Service Created',
+                    message: `"${formData.title}" has been successfully created.`
+                });
             }
-            fetchServices();
+            await fetchServices();
             handleCloseModal();
         } catch (err: any) {
             console.error('Error saving service:', err);
-            setError(err.message || 'Failed to save service');
+            setStatusModal({
+                isOpen: true,
+                type: 'error',
+                title: 'Operation Failed',
+                message: err.message || 'Failed to save service. Please try again.'
+            });
         }
     };
 
@@ -162,13 +227,6 @@ export function ServicesManagement() {
                     Add Service
                 </button>
             </div>
-
-            {/* Error Alert */}
-            {error && (
-                <div className="bg-red-500/20 border border-red-500 rounded-xl p-4 text-red-400">
-                    {error}
-                </div>
-            )}
 
             {/* Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -275,6 +333,17 @@ export function ServicesManagement() {
                     </div>
                 </div>
             </ContentModal>
+
+            <StatusModal
+                isOpen={statusModal.isOpen}
+                onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+                type={statusModal.type}
+                title={statusModal.title}
+                message={statusModal.message}
+                actionLabel={statusModal.secondaryActionLabel ? 'Confirm' : undefined}
+                onAction={statusModal.action}
+                secondaryActionLabel={statusModal.secondaryActionLabel}
+            />
         </div>
     );
 }

@@ -6,8 +6,9 @@ import { CategoryModal } from '../../components/dashboard/CategoryModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
 import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
 import { RichTextEditor } from '../../components/dashboard/RichTextEditor';
+import { StatusModal } from '../../components/dashboard/StatusModal';
 import { blogsApi } from '../../services/api';
-import type { Blog, CreateBlogPayload } from '../../types/types';
+import type { Blog } from '../../types/types';
 
 interface BlogDisplay extends Blog {
   id: string;
@@ -34,28 +35,28 @@ const initialCategories: Category[] = [
     name: 'Mobile',
     description: 'Mobile development',
     color: '#3B82F6',
-    count: 12
+    count: 0
   },
   {
     id: '2',
     name: 'AI',
     description: 'Artificial Intelligence',
     color: '#8B5CF6',
-    count: 8
+    count: 0
   },
   {
     id: '3',
     name: 'Web3',
     description: 'Blockchain & Web3',
     color: '#F59E0B',
-    count: 5
+    count: 0
   },
   {
     id: '4',
     name: 'Backend',
     description: 'Server side tech',
     color: '#10B981',
-    count: 15
+    count: 0
   }
 ];
 
@@ -66,44 +67,26 @@ export function BlogManagement() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogDisplay | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const [formData, setFormData] = useState({
+  // Status Modal State
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+    action?: () => void;
+    secondaryActionLabel?: string;
+    onSecondaryAction?: () => void;
+  }>({
+    isOpen: false,
+    type: 'success',
     title: '',
-    content: '',
-    author: 'Admin', // Default or from auth context
-    image: '', // URL or File object? The UI component returns URL usually if pre-uploaded? Or we handle file upload?
-    // Based on Postman, it expects file for create. But ImageUploadField likely handles upload to cloud/server and returns URL?
-    // Postman collection 'Create Blog' has 'image' as file.
-    // However, existing ImageUploadField usually returns a URL string (base64 or uploaded).
-    // The blogsApi.create expects CreateBlogPayload which has image?: File.
-    // If ImageUploadField returns a string (URL), we might need to adjust or if it supports file.
-    // For now let's assume we send URL string if it's just a link, or we need to handle file object.
-    // Looking at ImageUploadField usage, it passes `value={formData.image}` (string) and `onChange={(url)}`.
-    // So the UI assumes image is a URL string.
-    // But api.ts blogsApi.create constructs FormData and appends 'image'.
-    // If we pass a string to formData.append('image', string), the backend might handle it if it expects a file or url.
-    // If the backend strictly requires a FILE upload, then ImageUploadField needs to return a File object.
-    // Let's assume for this integration we try to pass what we have, or if we can get a file.
-    // Update: I will treat it as any for now to avoid TS errors and assume the backend can handle the string URL or I need to adapt.
-    // Actually, `blogsApi` expects `CreateBlogPayload` where image is File.
-    // I should tweak `blogsApi` or `CreateBlogPayload` if the UI provides a string (URL).
-    // Let's update `formData` to store the file if possible, or just string.
-    // Given the UI component `ImageUploadField`, it likely handles the upload and returns a URL.
-    // If so, the backend 'Create Blog' endpoint in Postman takes a file.
-    // This is a common mismatch.
-    // For now, I will cast to any to make it compile and send the URL string if that's what I have,
-    // OR I will modify `ImageUploadField` later.
-    // But wait, the user wants "correctly integrate".
-    // If the backend expects a file, I can't send a URL string in a FormData 'file' field easily.
-    // Unless `ImageUploadField` provides the file.
-    // I'll stick to the existing state structure but map _id to id.
+    message: ''
   });
 
-  // State for form fields matching API + extra UI fields
   const [postForm, setPostForm] = useState({
     title: '',
-    excerpt: '', // Not in API, but in UI
+    excerpt: '',
     category: 'Mobile',
     date: new Date().toISOString().split('T')[0],
     readTime: '5 min',
@@ -130,18 +113,23 @@ export function BlogManagement() {
       const displayData = data.map(p => ({
         ...p,
         id: p._id,
-        // Map missing UI fields from available API data or defaults
         excerpt: p.details.substring(0, 100) + '...',
-        category: 'Uncategorized', // API doesn't return category
+        category: 'Uncategorized', // API might not have this yet
         date: p.createdAt || new Date().toISOString(),
         readTime: p.readingTime || '5 min',
         slug: p.title.toLowerCase().replace(/ /g, '-'),
-        status: 'published' as const
+        status: 'published' as const,
+        tags: p.tags || []
       }));
       setPosts(displayData);
     } catch (err: any) {
       console.error(err);
-      setError('Failed to fetch blogs');
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'Failed to fetch blogs'
+      });
     } finally {
       setLoading(false);
     }
@@ -168,24 +156,53 @@ export function BlogManagement() {
   };
 
   const handleDelete = async (post: BlogDisplay) => {
-    if (confirm(`Delete "${post.title}"?`)) {
-      try {
-        await blogsApi.delete(post.id);
-        setPosts(posts.filter((p) => p.id !== post.id));
-      } catch (err) {
-        alert('Failed to delete post');
-      }
-    }
+    setStatusModal({
+      isOpen: true,
+      type: 'error',
+      title: 'Delete Blog Post',
+      message: `Are you sure you want to delete "${post.title}"?`,
+      action: async () => {
+        try {
+          await blogsApi.delete(post.id);
+          setPosts(posts.filter((p) => p.id !== post.id));
+          setStatusModal({
+            isOpen: true,
+            type: 'success',
+            title: 'Post Deleted',
+            message: `Blog post "${post.title}" has been successfully deleted.`
+          });
+        } catch (err: any) {
+          console.error('Error deleting blog:', err);
+          setStatusModal({
+            isOpen: true,
+            type: 'error',
+            title: 'Delete Failed',
+            message: err.message || 'Failed to delete blog post. Please try again.'
+          });
+        }
+      },
+      secondaryActionLabel: 'Cancel'
+    });
   };
 
   const handleSave = async () => {
     try {
-      // Construct payload. Note: The API technically expects 'image' as a File in FormData.
-      // If ImageUploadField returns a string (URL), we might need to download it or change how we send it.
-      // For this step, I will assume the `blogsApi.create` logic I wrote (which uses Key-Value pairs in FormData)
-      // is what we use. I'll pass the form data. I might encounter a type error if I pass string to File.
-      // I will ignore the image file upload for a moment or treat it as string if backend supports it.
-      // Or better: cast to any to bypass TS for the file field and send the string.
+
+      // Basic Validation
+      if (!postForm.title || !postForm.writer || !postForm.details) {
+        setStatusModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Validation Error',
+          message: 'Please fill in all required fields (Title, Author, Content).'
+        });
+        return;
+      }
+
+      // Note: We are mocking the image file handling for now as the API expects FormData for file
+      // but we are using JSON payload in this iteration unless we refactor api.ts strongly.
+      // Assuming api.ts `create` handles JSON payload properly or we need to update it.
+      // Based on previous files, we send a JSON object.
 
       const payload: any = {
         title: postForm.title,
@@ -193,20 +210,36 @@ export function BlogManagement() {
         readingTime: postForm.readingTime,
         details: postForm.details,
         tags: postForm.tags
-        // image: postForm.image // If backend supports URL
+        // image handling needs to be robust, ideally file upload to separate endpoint or base64
       };
 
       if (editingPost) {
         await blogsApi.update(editingPost.id, payload);
-        fetchPosts(); // Refresh or optimistic update
+        setStatusModal({
+          isOpen: true,
+          type: 'success',
+          title: 'Post Updated',
+          message: `Blog post "${postForm.title}" has been successfully updated.`
+        });
       } else {
         await blogsApi.create(payload);
-        fetchPosts();
+        setStatusModal({
+          isOpen: true,
+          type: 'success',
+          title: 'Post Created',
+          message: `Blog post "${postForm.title}" has been successfully created.`
+        });
       }
+      await fetchPosts();
       handleCloseModal();
     } catch (err: any) {
       console.error(err);
-      alert('Failed to save post');
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Operation Failed',
+        message: err.message || 'Failed to save blog post. Please try again.'
+      });
     }
   };
 
@@ -230,6 +263,7 @@ export function BlogManagement() {
     });
     setTagInput('');
   };
+
   const addTag = () => {
     if (tagInput.trim() && !postForm.tags.includes(tagInput.trim())) {
       setPostForm({
@@ -253,10 +287,16 @@ export function BlogManagement() {
       label: 'Post Title',
       render: (value: string, row: BlogDisplay) =>
         <div className="flex items-center gap-3">
-          <img
-            src={row.image}
-            alt={value}
-            className="w-12 h-12 rounded-lg object-cover" />
+          {row.image && (
+            <img
+              src={row.image}
+              alt={value}
+              className="w-12 h-12 rounded-lg object-cover"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/48?text=Blog';
+              }}
+            />
+          )}
 
           <div className="max-w-md">
             <div className="font-bold text-white line-clamp-1">{value}</div>
@@ -265,7 +305,6 @@ export function BlogManagement() {
             </div>
           </div>
         </div>
-
     },
     {
       key: 'category',
@@ -303,69 +342,83 @@ export function BlogManagement() {
 
           {value}
         </span>
-
     }];
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-white text-lg">Loading posts...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Blog Management
-          </h1>
-          <p className="text-gray-400">Create and manage blog posts</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={() => setIsCategoryModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all">
+    <>
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Blog Management
+            </h1>
+            <p className="text-gray-400">Create and manage blog posts</p>
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setIsCategoryModalOpen(true)}
+              className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10 text-white font-bold hover:bg-white/10 transition-all">
 
-            <Settings size={20} />
-            Categories
-          </button>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all">
+              <Settings size={20} />
+              Categories
+            </button>
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all">
 
-            <Plus size={20} />
-            New Post
-          </button>
+              <Plus size={20} />
+              New Post
+            </button>
+          </div>
         </div>
+
+
+
+
+
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <ManagementStatsCard
+            title="Total Posts"
+            value={posts.length}
+            icon={BookOpen}
+            color="from-blue-500 to-cyan-500" />
+
+          <ManagementStatsCard
+            title="Published"
+            value={posts.filter((p) => p.status === 'published').length}
+            icon={BookOpen}
+            color="from-green-500 to-emerald-500" />
+
+          <ManagementStatsCard
+            title="Drafts"
+            value={posts.filter((p) => p.status === 'draft').length}
+            icon={BookOpen}
+            color="from-yellow-500 to-orange-500" />
+
+          <ManagementStatsCard
+            title="Categories"
+            value={categories.length}
+            icon={Calendar}
+            color="from-purple-500 to-pink-500" />
+
+        </div>
+
+        <DataTable
+          columns={columns}
+          data={posts}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          searchable />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <ManagementStatsCard
-          title="Total Posts"
-          value={posts.length}
-          icon={BookOpen}
-          color="from-blue-500 to-cyan-500" />
-
-        <ManagementStatsCard
-          title="Published"
-          value={posts.filter((p) => p.status === 'published').length}
-          icon={BookOpen}
-          color="from-green-500 to-emerald-500" />
-
-        <ManagementStatsCard
-          title="Drafts"
-          value={posts.filter((p) => p.status === 'draft').length}
-          icon={BookOpen}
-          color="from-yellow-500 to-orange-500" />
-
-        <ManagementStatsCard
-          title="Categories"
-          value={categories.length}
-          icon={Calendar}
-          color="from-purple-500 to-pink-500" />
-
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={posts}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        searchable />
 
 
       <CategoryModal
@@ -622,6 +675,17 @@ export function BlogManagement() {
 
         </div>
       </ContentModal>
-    </div>);
 
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+        type={statusModal.type}
+        title={statusModal.title}
+        message={statusModal.message}
+        actionLabel={statusModal.secondaryActionLabel ? 'Confirm' : undefined}
+        onAction={statusModal.action}
+        secondaryActionLabel={statusModal.secondaryActionLabel}
+      />
+    </>
+  );
 }

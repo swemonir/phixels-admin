@@ -3,6 +3,7 @@ import { Plus, Package } from 'lucide-react';
 import { DataTable } from '../../components/dashboard/DataTable';
 import { ContentModal } from '../../components/dashboard/ContentModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
+import { StatusModal } from '../../components/dashboard/StatusModal';
 import { productsApi } from '../../services/api';
 import type { Product } from '../../types/types';
 
@@ -16,7 +17,6 @@ export function ProductsManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductDisplay | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
@@ -26,6 +26,22 @@ export function ProductsManagement() {
   });
   const [featureInput, setFeatureInput] = useState('');
 
+  // Status Modal State
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+    action?: () => void;
+    secondaryActionLabel?: string;
+    onSecondaryAction?: () => void;
+  }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
+
   // Fetch products on mount
   useEffect(() => {
     fetchProducts();
@@ -34,7 +50,6 @@ export function ProductsManagement() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      setError(null);
       const data = await productsApi.getAll();
       const displayData = data.map(p => ({
         ...p,
@@ -46,7 +61,12 @@ export function ProductsManagement() {
       setProducts(displayData);
     } catch (err: any) {
       console.error('Error fetching products:', err);
-      setError(err.message || 'Failed to load products');
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'Failed to load products'
+      });
     } finally {
       setLoading(false);
     }
@@ -65,20 +85,48 @@ export function ProductsManagement() {
   };
 
   const handleDelete = async (product: ProductDisplay) => {
-    if (confirm(`Are you sure you want to delete "${product.name}"?`)) {
-      try {
-        await productsApi.delete(product.id);
-        setProducts(products.filter((p) => p.id !== product.id));
-      } catch (err: any) {
-        console.error('Error deleting product:', err);
-        alert(err.message || 'Failed to delete product');
-      }
-    }
+    setStatusModal({
+      isOpen: true,
+      type: 'error',
+      title: 'Delete Product',
+      message: `Are you sure you want to delete "${product.name}"?`,
+      action: async () => {
+        try {
+          await productsApi.delete(product.id);
+          setProducts(products.filter((p) => p.id !== product.id));
+          setStatusModal({
+            isOpen: true,
+            type: 'success',
+            title: 'Product Deleted',
+            message: `"${product.name}" has been successfully deleted.`
+          });
+        } catch (err: any) {
+          console.error('Error deleting product:', err);
+          setStatusModal({
+            isOpen: true,
+            type: 'error',
+            title: 'Delete Failed',
+            message: err.message || 'Failed to delete product. Please try again.'
+          });
+        }
+      },
+      secondaryActionLabel: 'Cancel'
+    });
   };
 
   const handleSave = async () => {
     try {
-      setError(null);
+      // Basic Validation
+      if (!formData.name || !formData.description || !formData.pricing || !formData.category) {
+        setStatusModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Validation Error',
+          message: 'Please fill in all required fields (Name, Description, Price, Category).'
+        });
+        return;
+      }
+
       const payload = {
         ...formData,
         pricing: Number(formData.pricing)
@@ -86,14 +134,31 @@ export function ProductsManagement() {
 
       if (editingProduct) {
         await productsApi.update(editingProduct.id, payload);
+        setStatusModal({
+          isOpen: true,
+          type: 'success',
+          title: 'Product Updated',
+          message: `"${formData.name}" has been successfully updated.`
+        });
       } else {
         await productsApi.create(payload);
+        setStatusModal({
+          isOpen: true,
+          type: 'success',
+          title: 'Product Created',
+          message: `"${formData.name}" has been successfully created.`
+        });
       }
-      fetchProducts();
+      await fetchProducts();
       handleCloseModal();
     } catch (err: any) {
       console.error('Error saving product:', err);
-      setError(err.message || 'Failed to save product');
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Operation Failed',
+        message: err.message || 'Failed to save product. Please try again.'
+      });
     }
   };
 
@@ -194,13 +259,6 @@ export function ProductsManagement() {
           Add Product
         </button>
       </div>
-
-      {/* Error Alert */}
-      {error && (
-        <div className="bg-red-500/20 border border-red-500 rounded-xl p-4 text-red-400">
-          {error}
-        </div>
-      )}
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -337,6 +395,17 @@ export function ProductsManagement() {
           </div>
         </div>
       </ContentModal>
+
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+        type={statusModal.type}
+        title={statusModal.title}
+        message={statusModal.message}
+        actionLabel={statusModal.secondaryActionLabel ? 'Confirm' : undefined}
+        onAction={statusModal.action}
+        secondaryActionLabel={statusModal.secondaryActionLabel}
+      />
     </div>
   );
 }

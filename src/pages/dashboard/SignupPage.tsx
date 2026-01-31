@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, Mail, User, AlertCircle, CheckCircle, KeyRound, ArrowRight } from 'lucide-react';
+import { Lock, Mail, User, KeyRound, ArrowRight } from 'lucide-react';
 import { authApi } from '../../services/api';
+import { StatusModal } from '../../components/dashboard/StatusModal';
 
 export function SignupPage() {
     const [step, setStep] = useState<'signup' | 'verify'>('signup');
@@ -11,24 +12,44 @@ export function SignupPage() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [verificationCode, setVerificationCode] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
+    // Status Modal State
+    const [statusModal, setStatusModal] = useState<{
+        isOpen: boolean;
+        type: 'success' | 'error';
+        title: string;
+        message: string;
+        action?: () => void;
+    }>({
+        isOpen: false,
+        type: 'success',
+        title: '',
+        message: ''
+    });
+
     const handleSignup = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
 
         // Validation
         if (password !== confirmPassword) {
-            setError('Passwords do not match');
+            setStatusModal({
+                isOpen: true,
+                type: 'error',
+                title: 'Validation Error',
+                message: 'Passwords do not match.'
+            });
             return;
         }
 
         if (password.length < 6) {
-            setError('Password must be at least 6 characters long');
+            setStatusModal({
+                isOpen: true,
+                type: 'error',
+                title: 'Validation Error',
+                message: 'Password must be at least 6 characters long.'
+            });
             return;
         }
 
@@ -36,16 +57,29 @@ export function SignupPage() {
 
         try {
             await authApi.signup({ name, email, password, role: 'user' });
-            setSuccess('Account created! Please check your email for the verification code.');
-            setStep('verify');
+            setStatusModal({
+                isOpen: true,
+                type: 'success',
+                title: 'Account Created',
+                message: 'Please check your email for the verification code.',
+                action: () => {
+                    setStatusModal(prev => ({ ...prev, isOpen: false }));
+                    setStep('verify');
+                }
+            });
         } catch (err: any) {
+            let message = 'Signup failed. Please try again.';
             if (err.response && err.response.data && err.response.data.message) {
-                setError(err.response.data.message);
+                message = err.response.data.message;
             } else if (err.message) {
-                setError(err.message);
-            } else {
-                setError('Signup failed. Please try again.');
+                message = err.message;
             }
+            setStatusModal({
+                isOpen: true,
+                type: 'error',
+                title: 'Signup Failed',
+                message: message
+            });
         } finally {
             setIsLoading(false);
         }
@@ -53,22 +87,31 @@ export function SignupPage() {
 
     const handleVerify = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-        setSuccess('');
         setIsLoading(true);
 
         try {
             await authApi.verifyEmail({ email, verificationCode });
-            setSuccess('Email verified successfully! Redirecting to login...');
-            setTimeout(() => {
-                navigate('/login');
-            }, 2000);
+            setStatusModal({
+                isOpen: true,
+                type: 'success',
+                title: 'Email Verified',
+                message: 'Your email has been verified successfully! You can now log in to your account.',
+                action: () => {
+                    setStatusModal(prev => ({ ...prev, isOpen: false }));
+                    navigate('/login');
+                }
+            });
         } catch (err: any) {
+            let message = 'Verification failed. Please check the code and try again.';
             if (err.response && err.response.data && err.response.data.message) {
-                setError(err.response.data.message);
-            } else {
-                setError('Verification failed. Please check the code and try again.');
+                message = err.response.data.message;
             }
+            setStatusModal({
+                isOpen: true,
+                type: 'error',
+                title: 'Verification Failed',
+                message: message
+            });
         } finally {
             setIsLoading(false);
         }
@@ -119,13 +162,6 @@ export function SignupPage() {
                                 exit={{ opacity: 0, x: 20 }}
                                 onSubmit={handleSignup}
                                 className="space-y-6">
-
-                                {error &&
-                                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-3">
-                                        <AlertCircle className="text-red-500" size={20} />
-                                        <span className="text-sm text-red-500">{error}</span>
-                                    </div>
-                                }
 
                                 <div className="space-y-2">
                                     <label className="text-sm text-gray-400 font-medium">Full Name</label>
@@ -218,20 +254,6 @@ export function SignupPage() {
                                 onSubmit={handleVerify}
                                 className="space-y-6">
 
-                                {error &&
-                                    <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-3">
-                                        <AlertCircle className="text-red-500" size={20} />
-                                        <span className="text-sm text-red-500">{error}</span>
-                                    </div>
-                                }
-
-                                {success &&
-                                    <div className="p-4 rounded-lg bg-green-500/10 border border-green-500/20 flex items-center gap-3">
-                                        <CheckCircle className="text-green-500" size={20} />
-                                        <span className="text-sm text-green-500">{success}</span>
-                                    </div>
-                                }
-
                                 <div className="space-y-2">
                                     <label className="text-sm text-gray-400 font-medium">Verification Code</label>
                                     <div className="relative">
@@ -270,5 +292,14 @@ export function SignupPage() {
                     </AnimatePresence>
                 </div>
             </motion.div>
+
+            <StatusModal
+                isOpen={statusModal.isOpen}
+                onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+                type={statusModal.type}
+                title={statusModal.title}
+                message={statusModal.message}
+                onAction={statusModal.action}
+            />
         </div>);
 }

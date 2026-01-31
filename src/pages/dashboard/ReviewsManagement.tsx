@@ -4,6 +4,7 @@ import { DataTable } from '../../components/dashboard/DataTable';
 import { ContentModal } from '../../components/dashboard/ContentModal';
 import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsCard';
 import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
+import { StatusModal } from '../../components/dashboard/StatusModal';
 import { reviewsApi } from '../../services/api';
 import type { Review } from '../../types/types';
 
@@ -16,7 +17,6 @@ export function ReviewsManagement() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingReview, setEditingReview] = useState<ReviewDisplay | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -30,6 +30,22 @@ export function ReviewsManagement() {
     summary: ''
   });
 
+  // Status Modal State
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+    action?: () => void;
+    secondaryActionLabel?: string;
+    onSecondaryAction?: () => void;
+  }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
+
   useEffect(() => {
     fetchReviews();
   }, []);
@@ -37,7 +53,6 @@ export function ReviewsManagement() {
   const fetchReviews = async () => {
     try {
       setLoading(true);
-      setError(null);
       const data = await reviewsApi.getAll();
       const displayData = data.map(r => ({
         ...r,
@@ -47,7 +62,12 @@ export function ReviewsManagement() {
     } catch (err: any) {
       console.error('Error fetching reviews:', err);
       // Fallback for demo purposes if API fails (since it might not truly exist on backend yet)
-      setError('Failed to load reviews. Backend might be missing this endpoint.');
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Error',
+        message: err.message || 'Failed to load reviews. Backend might be missing this endpoint.'
+      });
       setReviews([]);
     } finally {
       setLoading(false);
@@ -71,33 +91,66 @@ export function ReviewsManagement() {
   };
 
   const handleDelete = async (review: ReviewDisplay) => {
-    if (confirm(`Delete review from "${review.name}"?`)) {
-      try {
-        await reviewsApi.delete(review.id);
-        setReviews(reviews.filter((r) => r.id !== review.id));
-      } catch (err: any) {
-        console.error('Error deleting review:', err);
-        alert(err.message || 'Failed to delete review');
-      }
-    }
+    setStatusModal({
+      isOpen: true,
+      type: 'error',
+      title: 'Delete Review',
+      message: `Are you sure you want to delete the review from "${review.name}"?`,
+      action: async () => {
+        try {
+          await reviewsApi.delete(review.id);
+          setReviews(reviews.filter((r) => r.id !== review.id));
+          setStatusModal({
+            isOpen: true,
+            type: 'success',
+            title: 'Review Deleted',
+            message: 'The review has been successfully deleted.'
+          });
+        } catch (err: any) {
+          console.error('Error deleting review:', err);
+          setStatusModal({
+            isOpen: true,
+            type: 'error',
+            title: 'Delete Failed',
+            message: err.message || 'Failed to delete review'
+          });
+        }
+      },
+      secondaryActionLabel: 'Cancel'
+    });
   };
 
   const handleSave = async () => {
     try {
-      setError(null);
       const payload = { ...formData };
 
       if (editingReview) {
         await reviewsApi.update(editingReview.id, payload);
-        fetchReviews();
+        setStatusModal({
+          isOpen: true,
+          type: 'success',
+          title: 'Review Updated',
+          message: 'The review has been successfully updated.'
+        });
       } else {
         await reviewsApi.create(payload);
-        fetchReviews();
+        setStatusModal({
+          isOpen: true,
+          type: 'success',
+          title: 'Review Created',
+          message: 'The new review has been successfully created.'
+        });
       }
+      fetchReviews();
       handleCloseModal();
     } catch (err: any) {
       console.error('Error saving review:', err);
-      setError(err.message || 'Failed to save review');
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Save Failed',
+        message: err.message || 'Failed to save review'
+      });
     }
   };
 
@@ -185,58 +238,54 @@ export function ReviewsManagement() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-4xl font-bold text-white mb-2">
-            Reviews Management
-          </h1>
-          <p className="text-gray-400">
-            Manage client testimonials and reviews
-          </p>
+    <>
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-4xl font-bold text-white mb-2">
+              Reviews Management
+            </h1>
+            <p className="text-gray-400">
+              Manage client testimonials and reviews
+            </p>
+          </div>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20_rgba(237,31,36,0.6)] transition-all">
+            <Plus size={20} />
+            Add Review
+          </button>
         </div>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white font-bold hover:shadow-[0_0_20px_rgba(237,31,36,0.6)] transition-all">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <ManagementStatsCard
+            title="Total Reviews"
+            value={reviews.length}
+            icon={Star}
+            color="from-yellow-500 to-orange-500" />
 
-          <Plus size={20} />
-          Add Review
-        </button>
+
+          <ManagementStatsCard
+            title="Average Rating"
+            value={averageRating}
+            icon={Star}
+            color="from-green-500 to-emerald-500" />
+
+          <ManagementStatsCard
+            title="5-Star Reviews"
+            value={reviews.filter((r) => r.rating === 5).length}
+            icon={Star}
+            color="from-purple-500 to-pink-500" />
+
+        </div>
+
+        <DataTable
+          columns={columns}
+          data={reviews}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          searchable />
       </div>
 
-      {error && (
-        <div className="bg-red-500/20 border border-red-500 rounded-xl p-4 text-red-400">
-          {error}
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <ManagementStatsCard
-          title="Total Reviews"
-          value={reviews.length}
-          icon={Star}
-          color="from-yellow-500 to-orange-500" />
-
-        <ManagementStatsCard
-          title="Average Rating"
-          value={averageRating}
-          icon={Star}
-          color="from-green-500 to-emerald-500" />
-
-        <ManagementStatsCard
-          title="5-Star Reviews"
-          value={reviews.filter((r) => r.rating === 5).length}
-          icon={Star}
-          color="from-purple-500 to-pink-500" />
-
-      </div>
-
-      <DataTable
-        columns={columns}
-        data={reviews}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        searchable />
 
 
       <ContentModal
@@ -423,6 +472,16 @@ export function ReviewsManagement() {
 
         </div>
       </ContentModal>
-    </div>);
-
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+        type={statusModal.type}
+        title={statusModal.title}
+        message={statusModal.message}
+        actionLabel={statusModal.secondaryActionLabel ? 'Confirm' : undefined}
+        onAction={statusModal.action}
+        secondaryActionLabel={statusModal.secondaryActionLabel}
+      />
+    </>
+  );
 }

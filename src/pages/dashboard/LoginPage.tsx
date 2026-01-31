@@ -1,33 +1,69 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Lock, Mail, AlertCircle } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { StatusModal } from '../../components/dashboard/StatusModal';
+
 export function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Status Modal State
+  const [statusModal, setStatusModal] = useState<{
+    isOpen: boolean;
+    type: 'success' | 'error';
+    title: string;
+    message: string;
+    action?: () => void;
+  }>({
+    isOpen: false,
+    type: 'success',
+    title: '',
+    message: ''
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
     setIsLoading(true);
 
     try {
       const success = await login(email, password);
       if (success) {
-        navigate('/dashboard');
+        setStatusModal({
+          isOpen: true,
+          type: 'success',
+          title: 'Welcome Back',
+          message: 'Login successful! Redirecting to dashboard...',
+          action: () => navigate('/dashboard')
+        });
+        // Auto-redirect after delay
+        setTimeout(() => {
+          navigate('/dashboard');
+        }, 2000);
       } else {
-        setError('Invalid email or password');
+        setStatusModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Login Failed',
+          message: 'Invalid email or password.'
+        });
       }
-    } catch (err) {
-      setError('An error occurred during login');
+    } catch (err: any) {
+      setStatusModal({
+        isOpen: true,
+        type: 'error',
+        title: 'Login Failed',
+        message: err.message || 'An error occurred during login. Please try again.'
+      });
     } finally {
       setIsLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-[#050505] flex items-center justify-center p-4 relative overflow-hidden">
       {/* Background Effects */}
@@ -70,22 +106,6 @@ export function LoginPage() {
         {/* Login Card */}
         <div className="p-8 rounded-2xl bg-[#0A0A0A] border border-white/10">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {error &&
-              <motion.div
-                initial={{
-                  opacity: 0,
-                  y: -10
-                }}
-                animate={{
-                  opacity: 1,
-                  y: 0
-                }}
-                className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 flex items-center gap-3">
-
-                <AlertCircle className="text-red-500" size={20} />
-                <span className="text-sm text-red-500">{error}</span>
-              </motion.div>
-            }
 
             <div className="space-y-2">
               <label className="text-sm text-gray-400 font-medium">Email</label>
@@ -148,6 +168,14 @@ export function LoginPage() {
 
         </div>
       </motion.div >
-    </div >);
 
+      <StatusModal
+        isOpen={statusModal.isOpen}
+        onClose={() => setStatusModal({ ...statusModal, isOpen: false })}
+        type={statusModal.type}
+        title={statusModal.title}
+        message={statusModal.message}
+        onAction={statusModal.action}
+      />
+    </div >);
 }

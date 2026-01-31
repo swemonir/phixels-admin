@@ -5,13 +5,14 @@ import type {
 } from '../types/types';
 
 // Base URL from Postman collection
-const BASE_URL = 'http://localhost:5000/api';
+const BASE_URL = 'https://rurally-unparticular-lilliana.ngrok-free.dev/api/v1';
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({
     baseURL: BASE_URL,
     headers: {
         'Content-Type': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
     },
 });
 
@@ -48,7 +49,7 @@ const getData = <T>(response: any): T => {
     // Check if response data has a DATA property (common in some APIs)
     // or if the response data IS the data.
     // Based on Postman patterns, it often returns the object directly or wrapped.
-    if (response.data && 'data' in response.data) {
+    if (response.data && typeof response.data === 'object' && 'data' in response.data) {
         return response.data.data;
     }
     return response.data;

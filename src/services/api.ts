@@ -5,7 +5,7 @@ import type {
 } from '../types/types';
 
 // Base URL from Postman collection
-const BASE_URL = 'https://rurally-unparticular-lilliana.ngrok-free.dev/api/v1';
+const BASE_URL = 'http://localhost:5000/api/v1';
 
 // Create axios instance
 const apiClient: AxiosInstance = axios.create({

@@ -8,7 +8,7 @@ import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
 import { RichTextEditor } from '../../components/dashboard/RichTextEditor';
 import { StatusModal } from '../../components/dashboard/StatusModal';
 import { blogsApi } from '../../services/api';
-import type { Blog } from '../../types/types';
+import type { Blog, CreateBlogPayload } from '../../types/types';
 
 interface BlogDisplay extends Blog {
   id: string;
@@ -86,10 +86,8 @@ export function BlogManagement() {
 
   const [postForm, setPostForm] = useState({
     title: '',
-    excerpt: '',
     category: 'Mobile',
     date: new Date().toISOString().split('T')[0],
-    readTime: '5 min',
     image: '',
     imageFile: null as File | null,
     slug: '',
@@ -113,7 +111,7 @@ export function BlogManagement() {
       const displayData = data.map(p => ({
         ...p,
         id: p._id,
-        excerpt: p.details.substring(0, 100) + '...',
+        excerpt: p.details ? (p.details.substring(0, 100) + '...') : '',
         category: 'Uncategorized', // API might not have this yet
         date: p.createdAt || new Date().toISOString(),
         readTime: p.readingTime || '5 min',
@@ -139,10 +137,8 @@ export function BlogManagement() {
     setEditingPost(post);
     setPostForm({
       title: post.title,
-      excerpt: post.excerpt,
       category: post.category,
       date: post.date,
-      readTime: post.readTime,
       image: post.image || '',
       imageFile: null,
       slug: post.slug,
@@ -194,7 +190,17 @@ export function BlogManagement() {
           isOpen: true,
           type: 'error',
           title: 'Validation Error',
-          message: 'Please fill in all required fields (Title, Author, Content).'
+          message: `Please fill in all required fields: ${!postForm.title ? 'Title, ' : ''}${!postForm.writer ? 'Author, ' : ''}${!postForm.details ? 'Content' : ''}`.replace(/, $/, '')
+        });
+        return;
+      }
+
+      if (!editingPost && !postForm.imageFile) {
+        setStatusModal({
+          isOpen: true,
+          type: 'error',
+          title: 'Validation Error',
+          message: 'Please upload a featured image for the blog post.'
         });
         return;
       }
@@ -204,13 +210,13 @@ export function BlogManagement() {
       // Assuming api.ts `create` handles JSON payload properly or we need to update it.
       // Based on previous files, we send a JSON object.
 
-      const payload: any = {
+      const payload: CreateBlogPayload = {
         title: postForm.title,
         writer: postForm.writer,
         readingTime: postForm.readingTime,
         details: postForm.details,
-        tags: postForm.tags
-        // image handling needs to be robust, ideally file upload to separate endpoint or base64
+        tags: postForm.tags,
+        image: postForm.imageFile || undefined
       };
 
       if (editingPost) {
@@ -248,10 +254,8 @@ export function BlogManagement() {
     setEditingPost(null);
     setPostForm({
       title: '',
-      excerpt: '',
       category: 'Mobile',
       date: new Date().toISOString().split('T')[0],
-      readTime: '5 min',
       image: '',
       imageFile: null,
       slug: '',
@@ -456,24 +460,7 @@ export function BlogManagement() {
 
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm text-gray-400 font-medium">
-              Excerpt *
-            </label>
-            <textarea
-              value={postForm.excerpt}
-              onChange={(e) =>
-                setPostForm({
-                  ...postForm,
-                  excerpt: e.target.value
-                })
-              }
-              rows={2}
-              className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none resize-none"
-              placeholder="Brief description of the post..."
-            />
 
-          </div>
 
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
@@ -520,11 +507,11 @@ export function BlogManagement() {
               </label>
               <input
                 type="text"
-                value={postForm.readTime}
+                value={postForm.readingTime}
                 onChange={(e) =>
                   setPostForm({
                     ...postForm,
-                    readTime: e.target.value
+                    readingTime: e.target.value
                   })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"

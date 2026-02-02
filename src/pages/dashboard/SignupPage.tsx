@@ -56,7 +56,7 @@ export function SignupPage() {
         setIsLoading(true);
 
         try {
-            await authApi.signup({ name, email, password, role: 'user' });
+            await authApi.signup({ name, email, password, role: 'admin' });
             setStatusModal({
                 isOpen: true,
                 type: 'success',

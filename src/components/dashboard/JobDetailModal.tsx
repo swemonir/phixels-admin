@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -7,8 +6,9 @@ import {
   Mail,
   Link as LinkIcon,
   FileText,
-  ChevronDown } from
-'lucide-react';
+  ChevronDown
+} from
+  'lucide-react';
 import { Button } from '../ui/Button';
 interface JobDetailModalProps {
   isOpen: boolean;

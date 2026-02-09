@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -8,8 +7,9 @@ import {
   Globe,
   MessageSquare,
   Reply,
-  Check } from
-'lucide-react';
+  Check
+} from
+  'lucide-react';
 import { Button } from '../ui/Button';
 interface ContactDetailModalProps {
   isOpen: boolean;

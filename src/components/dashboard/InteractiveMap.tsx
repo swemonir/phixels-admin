@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MapPin, X, TrendingUp, Users, MousePointer } from 'lucide-react';
+import { MapPin, X, Users, MousePointer } from 'lucide-react';
 // Mock data for cities
 const cities = [
   {

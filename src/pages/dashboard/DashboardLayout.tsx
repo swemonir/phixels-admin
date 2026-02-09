@@ -15,8 +15,7 @@ import {
   Clock,
   AlertCircle,
   Bell,
-} from
-  'lucide-react';
+} from 'lucide-react';
 import { DropOffsModal } from '../../components/dashboard/DropOffsModal';
 import { NotificationDropdown } from '../../components/dashboard/NotificationDropdown';
 import { motion, AnimatePresence } from 'framer-motion';

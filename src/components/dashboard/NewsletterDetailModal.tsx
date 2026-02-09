@@ -1,6 +1,5 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Calendar, UserMinus, CheckCircle } from 'lucide-react';
+import { X, Mail, Calendar, UserMinus } from 'lucide-react';
 import { Button } from '../ui/Button';
 interface NewsletterDetailModalProps {
   isOpen: boolean;
@@ -109,9 +108,9 @@ export function NewsletterDetailModal({
               Close
             </Button>
             {subscriber.status === 'Active' &&
-            <Button
-              variant="outline"
-              className="flex-1 border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-400">
+              <Button
+                variant="outline"
+                className="flex-1 border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-400">
 
                 <UserMinus size={16} className="mr-2" /> Unsubscribe
               </Button>

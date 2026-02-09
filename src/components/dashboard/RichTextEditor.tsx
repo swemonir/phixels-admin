@@ -1,4 +1,3 @@
-import React from 'react';
 import { Bold, Italic, List, Link as LinkIcon, Code } from 'lucide-react';
 interface RichTextEditorProps {
   value: string;

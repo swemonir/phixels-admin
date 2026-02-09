@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Smartphone, Monitor, MapPin, Clock, Eye } from 'lucide-react';
 import { DataDetailModal } from '../../components/dashboard/DataDetailModal';
@@ -16,84 +16,84 @@ export function RealtimeMonitor() {
   useEffect(() => {
     const interval = setInterval(() => {
       setActiveUsers((prev) =>
-      Math.max(20, Math.min(80, prev + Math.floor(Math.random() * 5) - 2))
+        Math.max(20, Math.min(80, prev + Math.floor(Math.random() * 5) - 2))
       );
     }, 3000);
     return () => clearInterval(interval);
   }, []);
   const liveEvents = [
-  {
-    event: 'Page View: /pricing',
-    location: 'London, UK',
-    device: 'Desktop',
-    time: 'Just now',
-    duration: '2m 34s',
-    activity: 'Scrolling through pricing tiers',
-    status: 'Active'
-  },
-  {
-    event: 'Click: WhatsApp',
-    location: 'Mumbai, IN',
-    device: 'Mobile',
-    time: '2s ago',
-    duration: '5m 12s',
-    activity: 'Clicked WhatsApp contact button',
-    status: 'Active'
-  },
-  {
-    event: 'Page View: /blog/react',
-    location: 'New York, US',
-    device: 'Desktop',
-    time: '5s ago',
-    duration: '8m 45s',
-    activity: 'Reading blog article',
-    status: 'Active'
-  },
-  {
-    event: 'Form Start',
-    location: 'Berlin, DE',
-    device: 'Desktop',
-    time: '12s ago',
-    duration: '3m 20s',
-    activity: 'Filling contact form',
-    status: 'Active'
-  },
-  {
-    event: 'Page View: /home',
-    location: 'Toronto, CA',
-    device: 'Mobile',
-    time: '15s ago',
-    duration: '1m 05s',
-    activity: 'Browsing homepage',
-    status: 'Active'
-  },
-  {
-    event: 'Page View: /services',
-    location: 'Sydney, AU',
-    device: 'Tablet',
-    time: '18s ago',
-    duration: '4m 30s',
-    activity: 'Viewing service details',
-    status: 'Active'
-  },
-  {
-    event: 'Click: Portfolio',
-    location: 'Paris, FR',
-    device: 'Desktop',
-    time: '22s ago',
-    duration: '6m 15s',
-    activity: 'Exploring portfolio items',
-    status: 'Active'
-  },
-  {
-    event: 'Page View: /contact',
-    location: 'Tokyo, JP',
-    device: 'Mobile',
-    time: '28s ago',
-    duration: '2m 50s',
-    activity: 'Viewing contact information',
-    status: 'Active'
-  }];
+    {
+      event: 'Page View: /pricing',
+      location: 'London, UK',
+      device: 'Desktop',
+      time: 'Just now',
+      duration: '2m 34s',
+      activity: 'Scrolling through pricing tiers',
+      status: 'Active'
+    },
+    {
+      event: 'Click: WhatsApp',
+      location: 'Mumbai, IN',
+      device: 'Mobile',
+      time: '2s ago',
+      duration: '5m 12s',
+      activity: 'Clicked WhatsApp contact button',
+      status: 'Active'
+    },
+    {
+      event: 'Page View: /blog/react',
+      location: 'New York, US',
+      device: 'Desktop',
+      time: '5s ago',
+      duration: '8m 45s',
+      activity: 'Reading blog article',
+      status: 'Active'
+    },
+    {
+      event: 'Form Start',
+      location: 'Berlin, DE',
+      device: 'Desktop',
+      time: '12s ago',
+      duration: '3m 20s',
+      activity: 'Filling contact form',
+      status: 'Active'
+    },
+    {
+      event: 'Page View: /home',
+      location: 'Toronto, CA',
+      device: 'Mobile',
+      time: '15s ago',
+      duration: '1m 05s',
+      activity: 'Browsing homepage',
+      status: 'Active'
+    },
+    {
+      event: 'Page View: /services',
+      location: 'Sydney, AU',
+      device: 'Tablet',
+      time: '18s ago',
+      duration: '4m 30s',
+      activity: 'Viewing service details',
+      status: 'Active'
+    },
+    {
+      event: 'Click: Portfolio',
+      location: 'Paris, FR',
+      device: 'Desktop',
+      time: '22s ago',
+      duration: '6m 15s',
+      activity: 'Exploring portfolio items',
+      status: 'Active'
+    },
+    {
+      event: 'Page View: /contact',
+      location: 'Tokyo, JP',
+      device: 'Mobile',
+      time: '28s ago',
+      duration: '2m 50s',
+      activity: 'Viewing contact information',
+      status: 'Active'
+    }];
 
   return (
     <div className="space-y-4">
@@ -128,12 +128,12 @@ export function RealtimeMonitor() {
 
           <div className="mt-4 w-full h-12 flex items-end justify-between px-2 gap-0.5">
             {[...Array(20)].map((_, i) =>
-            <div
-              key={i}
-              className="w-full bg-[color:var(--bright-red)] rounded-sm transition-all duration-500 opacity-60"
-              style={{
-                height: `${Math.random() * 100}%`
-              }} />
+              <div
+                key={i}
+                className="w-full bg-[color:var(--bright-red)] rounded-sm transition-all duration-500 opacity-60"
+                style={{
+                  height: `${Math.random() * 100}%`
+                }} />
 
             )}
           </div>
@@ -193,36 +193,36 @@ export function RealtimeMonitor() {
           </h2>
           <div className="space-y-2">
             {[
-            {
-              path: '/',
-              users: 18
-            },
-            {
-              path: '/pricing',
-              users: 8
-            },
-            {
-              path: '/blog/react-hooks',
-              users: 5
-            },
-            {
-              path: '/contact',
-              users: 4
-            }].
-            map((page, i) =>
-            <div
-              key={i}
-              onClick={() => handleRowClick(page, 'Page Activity')}
-              className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0 cursor-pointer hover:bg-white/5 px-2 rounded transition-colors">
+              {
+                path: '/',
+                users: 18
+              },
+              {
+                path: '/pricing',
+                users: 8
+              },
+              {
+                path: '/blog/react-hooks',
+                users: 5
+              },
+              {
+                path: '/contact',
+                users: 4
+              }].
+              map((page, i) =>
+                <div
+                  key={i}
+                  onClick={() => handleRowClick(page, 'Page Activity')}
+                  className="flex items-center justify-between py-1.5 border-b border-white/5 last:border-0 cursor-pointer hover:bg-white/5 px-2 rounded transition-colors">
 
-                <span className="text-xs text-gray-300 font-mono truncate max-w-[150px]">
-                  {page.path}
-                </span>
-                <span className="text-[10px] font-bold bg-[color:var(--bright-red)]/10 text-[color:var(--bright-red)] px-1.5 py-0.5 rounded">
-                  {page.users}
-                </span>
-              </div>
-            )}
+                  <span className="text-xs text-gray-300 font-mono truncate max-w-[150px]">
+                    {page.path}
+                  </span>
+                  <span className="text-[10px] font-bold bg-[color:var(--bright-red)]/10 text-[color:var(--bright-red)] px-1.5 py-0.5 rounded">
+                    {page.users}
+                  </span>
+                </div>
+              )}
           </div>
         </motion.div>
       </div>
@@ -247,21 +247,21 @@ export function RealtimeMonitor() {
             <tbody>
               <AnimatePresence>
                 {liveEvents.map((event, i) =>
-                <motion.tr
-                  key={i}
-                  onClick={() => handleRowClick(event, 'Live User Activity')}
-                  initial={{
-                    opacity: 0,
-                    x: -10
-                  }}
-                  animate={{
-                    opacity: 1,
-                    x: 0
-                  }}
-                  transition={{
-                    delay: i * 0.05
-                  }}
-                  className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors cursor-pointer group">
+                  <motion.tr
+                    key={i}
+                    onClick={() => handleRowClick(event, 'Live User Activity')}
+                    initial={{
+                      opacity: 0,
+                      x: -10
+                    }}
+                    animate={{
+                      opacity: 1,
+                      x: 0
+                    }}
+                    transition={{
+                      delay: i * 0.05
+                    }}
+                    className="border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors cursor-pointer group">
 
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-2">
@@ -281,10 +281,10 @@ export function RealtimeMonitor() {
                     <td className="py-3 px-3">
                       <div className="flex items-center gap-1 text-gray-400 text-xs">
                         {event.device === 'Mobile' ?
-                      <Smartphone size={10} /> :
+                          <Smartphone size={10} /> :
 
-                      <Monitor size={10} />
-                      }
+                          <Monitor size={10} />
+                        }
                         {event.device}
                       </div>
                     </td>

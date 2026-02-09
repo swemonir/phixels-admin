@@ -1,13 +1,12 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Bell,
   Clock,
   CheckCircle,
   MessageSquare,
   Briefcase,
-  ChevronRight } from
-'lucide-react';
+  ChevronRight
+} from
+  'lucide-react';
 import { Link } from 'react-router-dom';
 interface NotificationDropdownProps {
   isOpen: boolean;
@@ -18,69 +17,69 @@ export function NotificationDropdown({
   onClose
 }: NotificationDropdownProps) {
   const notifications = [
-  {
-    id: 1,
-    type: 'lead',
-    title: 'New Project Request',
-    message: 'John Doe submitted a new project request.',
-    time: '5 min ago',
-    icon: Clock,
-    color: 'text-yellow-500',
-    bg: 'bg-yellow-500/10'
-  },
-  {
-    id: 2,
-    type: 'meeting',
-    title: 'Meeting Confirmed',
-    message: 'Sarah Smith booked a consultation for Mar 22.',
-    time: '1 hour ago',
-    icon: CheckCircle,
-    color: 'text-[color:var(--vibrant-green)]',
-    bg: 'bg-[color:var(--vibrant-green)]/10'
-  },
-  {
-    id: 3,
-    type: 'contact',
-    title: 'New Message',
-    message: 'Alice Brown sent a contact inquiry.',
-    time: '3 hours ago',
-    icon: MessageSquare,
-    color: 'text-blue-500',
-    bg: 'bg-blue-500/10'
-  },
-  {
-    id: 4,
-    type: 'job',
-    title: 'Job Application',
-    message: 'New application for Senior Designer role.',
-    time: '5 hours ago',
-    icon: Briefcase,
-    color: 'text-pink-500',
-    bg: 'bg-pink-500/10'
-  }];
+    {
+      id: 1,
+      type: 'lead',
+      title: 'New Project Request',
+      message: 'John Doe submitted a new project request.',
+      time: '5 min ago',
+      icon: Clock,
+      color: 'text-yellow-500',
+      bg: 'bg-yellow-500/10'
+    },
+    {
+      id: 2,
+      type: 'meeting',
+      title: 'Meeting Confirmed',
+      message: 'Sarah Smith booked a consultation for Mar 22.',
+      time: '1 hour ago',
+      icon: CheckCircle,
+      color: 'text-[color:var(--vibrant-green)]',
+      bg: 'bg-[color:var(--vibrant-green)]/10'
+    },
+    {
+      id: 3,
+      type: 'contact',
+      title: 'New Message',
+      message: 'Alice Brown sent a contact inquiry.',
+      time: '3 hours ago',
+      icon: MessageSquare,
+      color: 'text-blue-500',
+      bg: 'bg-blue-500/10'
+    },
+    {
+      id: 4,
+      type: 'job',
+      title: 'Job Application',
+      message: 'New application for Senior Designer role.',
+      time: '5 hours ago',
+      icon: Briefcase,
+      color: 'text-pink-500',
+      bg: 'bg-pink-500/10'
+    }];
 
   return (
     <AnimatePresence>
       {isOpen &&
-      <>
+        <>
           <div className="fixed inset-0 z-40" onClick={onClose} />
           <motion.div
-          initial={{
-            opacity: 0,
-            y: 10,
-            scale: 0.95
-          }}
-          animate={{
-            opacity: 1,
-            y: 0,
-            scale: 1
-          }}
-          exit={{
-            opacity: 0,
-            y: 10,
-            scale: 0.95
-          }}
-          className="absolute right-0 top-full mt-4 w-80 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 flex flex-col">
+            initial={{
+              opacity: 0,
+              y: 10,
+              scale: 0.95
+            }}
+            animate={{
+              opacity: 1,
+              y: 0,
+              scale: 1
+            }}
+            exit={{
+              opacity: 0,
+              y: 10,
+              scale: 0.95
+            }}
+            className="absolute right-0 top-full mt-4 w-80 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-50 flex flex-col">
 
             <div className="p-4 border-b border-white/10 flex items-center justify-between bg-white/5">
               <h3 className="font-bold text-white text-sm">Notifications</h3>
@@ -91,14 +90,14 @@ export function NotificationDropdown({
 
             <div className="max-h-[300px] overflow-y-auto custom-scrollbar">
               {notifications.map((notif) =>
-            <Link
-              key={notif.id}
-              to="/dashboard/leads"
-              onClick={onClose}
-              className="flex items-start gap-3 p-4 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 group">
+                <Link
+                  key={notif.id}
+                  to="/dashboard/leads"
+                  onClick={onClose}
+                  className="flex items-start gap-3 p-4 hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 group">
 
                   <div
-                className={`p-2 rounded-lg shrink-0 ${notif.bg} ${notif.color}`}>
+                    className={`p-2 rounded-lg shrink-0 ${notif.bg} ${notif.color}`}>
 
                     <notif.icon size={16} />
                   </div>
@@ -116,13 +115,13 @@ export function NotificationDropdown({
                     </p>
                   </div>
                 </Link>
-            )}
+              )}
             </div>
 
             <Link
-            to="/dashboard/leads"
-            onClick={onClose}
-            className="p-3 text-center text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors border-t border-white/10 flex items-center justify-center gap-1">
+              to="/dashboard/leads"
+              onClick={onClose}
+              className="p-3 text-center text-xs font-bold text-gray-400 hover:text-white hover:bg-white/5 transition-colors border-t border-white/10 flex items-center justify-center gap-1">
 
               View All Notifications <ChevronRight size={12} />
             </Link>

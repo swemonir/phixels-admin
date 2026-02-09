@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ContentModal } from './ContentModal';
 import { Plus, Trash2, Edit2 } from 'lucide-react';
 import { StatusModal } from './StatusModal';

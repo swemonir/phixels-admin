@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -8,8 +7,9 @@ import {
   Clock,
   Users,
   Calendar,
-  AlertCircle } from
-'lucide-react';
+  AlertCircle
+} from
+  'lucide-react';
 interface DropOffsModalProps {
   isOpen: boolean;
   onClose: () => void;

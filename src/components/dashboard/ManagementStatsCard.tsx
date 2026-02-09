@@ -1,9 +1,8 @@
-import React from 'react';
-import { BoxIcon } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 interface ManagementStatsCardProps {
   title: string;
   value: string | number;
-  icon: BoxIcon;
+  icon: LucideIcon;
   color: string;
 }
 export function ManagementStatsCard({

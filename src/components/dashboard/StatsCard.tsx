@@ -1,11 +1,10 @@
-import React from 'react';
 import { motion } from 'framer-motion';
-import { BoxIcon } from 'lucide-react';
+import { LucideIcon } from 'lucide-react';
 interface StatsCardProps {
   title: string;
   value: string | number;
   change?: string;
-  icon: BoxIcon;
+  icon: LucideIcon;
   color: string;
 }
 export function StatsCard({
@@ -34,8 +33,8 @@ export function StatsCard({
           <Icon className="w-6 h-6 text-white" />
         </div>
         {change &&
-        <span
-          className={`text-xs font-bold px-2 py-1 rounded-full ${change.startsWith('+') ? 'bg-[color:var(--vibrant-green)]/20 text-[color:var(--vibrant-green)]' : 'bg-red-500/20 text-red-500'}`}>
+          <span
+            className={`text-xs font-bold px-2 py-1 rounded-full ${change.startsWith('+') ? 'bg-[color:var(--vibrant-green)]/20 text-[color:var(--vibrant-green)]' : 'bg-red-500/20 text-red-500'}`}>
 
             {change}
           </span>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, createElement } from 'react';
+import { useEffect, useState, createElement } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -8,8 +8,9 @@ import {
   MapPin,
   Clock,
   Eye,
-  Activity } from
-'lucide-react';
+  Activity
+} from
+  'lucide-react';
 interface RealTimeUser {
   id: number;
   page: string;
@@ -27,94 +28,94 @@ interface RealTimeUsersModalProps {
 }
 // Mock real-time user data
 const generateMockUsers = (): RealTimeUser[] => [
-{
-  id: 1,
-  page: '/services/web-design',
-  location: 'Dhaka, Bangladesh',
-  city: 'Dhaka',
-  country: 'Bangladesh',
-  device: 'Mobile',
-  duration: '2m 34s',
-  activity: 'Scrolling',
-  timestamp: 'Just now'
-},
-{
-  id: 2,
-  page: '/blog/ui-trends-2024',
-  location: 'London, United Kingdom',
-  city: 'London',
-  country: 'United Kingdom',
-  device: 'Desktop',
-  duration: '5m 12s',
-  activity: 'Reading',
-  timestamp: '3s ago'
-},
-{
-  id: 3,
-  page: '/contact',
-  location: 'New York, USA',
-  city: 'New York',
-  country: 'USA',
-  device: 'Desktop',
-  duration: '1m 45s',
-  activity: 'Filling form',
-  timestamp: '8s ago'
-},
-{
-  id: 4,
-  page: '/',
-  location: 'Toronto, Canada',
-  city: 'Toronto',
-  country: 'Canada',
-  device: 'Mobile',
-  duration: '45s',
-  activity: 'Browsing',
-  timestamp: '15s ago'
-},
-{
-  id: 5,
-  page: '/portfolio',
-  location: 'Berlin, Germany',
-  city: 'Berlin',
-  country: 'Germany',
-  device: 'Tablet',
-  duration: '3m 20s',
-  activity: 'Viewing images',
-  timestamp: '22s ago'
-},
-{
-  id: 6,
-  page: '/services/mobile-dev',
-  location: 'Mumbai, India',
-  city: 'Mumbai',
-  country: 'India',
-  device: 'Mobile',
-  duration: '1m 10s',
-  activity: 'Scrolling',
-  timestamp: '28s ago'
-},
-{
-  id: 7,
-  page: '/case-studies',
-  location: 'Sydney, Australia',
-  city: 'Sydney',
-  country: 'Australia',
-  device: 'Desktop',
-  duration: '4m 55s',
-  activity: 'Reading',
-  timestamp: '35s ago'
-},
-{
-  id: 8,
-  page: '/blog',
-  location: 'Paris, France',
-  city: 'Paris',
-  country: 'France',
-  device: 'Desktop',
-  duration: '2m 18s',
-  activity: 'Browsing',
-  timestamp: '42s ago'
-}];
+  {
+    id: 1,
+    page: '/services/web-design',
+    location: 'Dhaka, Bangladesh',
+    city: 'Dhaka',
+    country: 'Bangladesh',
+    device: 'Mobile',
+    duration: '2m 34s',
+    activity: 'Scrolling',
+    timestamp: 'Just now'
+  },
+  {
+    id: 2,
+    page: '/blog/ui-trends-2024',
+    location: 'London, United Kingdom',
+    city: 'London',
+    country: 'United Kingdom',
+    device: 'Desktop',
+    duration: '5m 12s',
+    activity: 'Reading',
+    timestamp: '3s ago'
+  },
+  {
+    id: 3,
+    page: '/contact',
+    location: 'New York, USA',
+    city: 'New York',
+    country: 'USA',
+    device: 'Desktop',
+    duration: '1m 45s',
+    activity: 'Filling form',
+    timestamp: '8s ago'
+  },
+  {
+    id: 4,
+    page: '/',
+    location: 'Toronto, Canada',
+    city: 'Toronto',
+    country: 'Canada',
+    device: 'Mobile',
+    duration: '45s',
+    activity: 'Browsing',
+    timestamp: '15s ago'
+  },
+  {
+    id: 5,
+    page: '/portfolio',
+    location: 'Berlin, Germany',
+    city: 'Berlin',
+    country: 'Germany',
+    device: 'Tablet',
+    duration: '3m 20s',
+    activity: 'Viewing images',
+    timestamp: '22s ago'
+  },
+  {
+    id: 6,
+    page: '/services/mobile-dev',
+    location: 'Mumbai, India',
+    city: 'Mumbai',
+    country: 'India',
+    device: 'Mobile',
+    duration: '1m 10s',
+    activity: 'Scrolling',
+    timestamp: '28s ago'
+  },
+  {
+    id: 7,
+    page: '/case-studies',
+    location: 'Sydney, Australia',
+    city: 'Sydney',
+    country: 'Australia',
+    device: 'Desktop',
+    duration: '4m 55s',
+    activity: 'Reading',
+    timestamp: '35s ago'
+  },
+  {
+    id: 8,
+    page: '/blog',
+    location: 'Paris, France',
+    city: 'Paris',
+    country: 'France',
+    device: 'Desktop',
+    duration: '2m 18s',
+    activity: 'Browsing',
+    timestamp: '42s ago'
+  }];
 
 export function RealTimeUsersModal({
   isOpen,
@@ -248,29 +249,29 @@ export function RealTimeUsersModal({
                 </h3>
                 <div className="space-y-3">
                   {users.map((user, index) =>
-                  <motion.div
-                    key={user.id}
-                    initial={{
-                      opacity: 0,
-                      x: -20
-                    }}
-                    animate={{
-                      opacity: 1,
-                      x: 0
-                    }}
-                    transition={{
-                      delay: index * 0.05
-                    }}
-                    className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-[color:var(--vibrant-green)]/30 transition-all group">
+                    <motion.div
+                      key={user.id}
+                      initial={{
+                        opacity: 0,
+                        x: -20
+                      }}
+                      animate={{
+                        opacity: 1,
+                        x: 0
+                      }}
+                      transition={{
+                        delay: index * 0.05
+                      }}
+                      className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-[color:var(--vibrant-green)]/30 transition-all group">
 
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <div
-                          className={`p-2 rounded-lg bg-white/5 ${getDeviceColor(user.device)}`}>
+                            className={`p-2 rounded-lg bg-white/5 ${getDeviceColor(user.device)}`}>
 
                             {createElement(getDeviceIcon(user.device), {
-                            size: 16
-                          })}
+                              size: 16
+                            })}
                           </div>
                           <div>
                             <div className="text-sm font-bold text-white group-hover:text-[color:var(--vibrant-green)] transition-colors">
@@ -298,9 +299,9 @@ export function RealTimeUsersModal({
                         </div>
                         <div className="flex items-center gap-2 text-xs">
                           {createElement(getDeviceIcon(user.device), {
-                          size: 12,
-                          className: 'text-gray-400'
-                        })}
+                            size: 12,
+                            className: 'text-gray-400'
+                          })}
                           <span className="text-gray-300">{user.device}</span>
                         </div>
                       </div>
@@ -318,10 +319,10 @@ export function RealTimeUsersModal({
                   </h4>
                   <div className="space-y-3">
                     {Object.entries(usersByPage).
-                    sort(([, a], [, b]) => b.length - a.length).
-                    slice(0, 5).
-                    map(([page, pageUsers]) =>
-                    <div key={page} className="space-y-1">
+                      sort(([, a], [, b]) => b.length - a.length).
+                      slice(0, 5).
+                      map(([page, pageUsers]) =>
+                        <div key={page} className="space-y-1">
                           <div className="flex justify-between items-center text-xs">
                             <span className="text-gray-300 truncate max-w-[150px]">
                               {page}
@@ -332,14 +333,14 @@ export function RealTimeUsersModal({
                           </div>
                           <div className="w-full h-1.5 bg-white/5 rounded-full overflow-hidden">
                             <div
-                          className="h-full bg-gradient-to-r from-[color:var(--vibrant-green)] to-[color:var(--neon-yellow)]"
-                          style={{
-                            width: `${pageUsers.length / users.length * 100}%`
-                          }} />
+                              className="h-full bg-gradient-to-r from-[color:var(--vibrant-green)] to-[color:var(--neon-yellow)]"
+                              style={{
+                                width: `${pageUsers.length / users.length * 100}%`
+                              }} />
 
                           </div>
                         </div>
-                    )}
+                      )}
                   </div>
                 </div>
 
@@ -350,17 +351,17 @@ export function RealTimeUsersModal({
                   </h4>
                   <div className="space-y-2">
                     {Object.entries(usersByCountry).
-                    sort(([, a], [, b]) => b - a).
-                    slice(0, 5).
-                    map(([country, count]) =>
-                    <div
-                      key={country}
-                      className="flex justify-between items-center text-xs">
+                      sort(([, a], [, b]) => b - a).
+                      slice(0, 5).
+                      map(([country, count]) =>
+                        <div
+                          key={country}
+                          className="flex justify-between items-center text-xs">
 
                           <span className="text-gray-300">{country}</span>
                           <span className="text-white font-bold">{count}</span>
                         </div>
-                    )}
+                      )}
                   </div>
                 </div>
 

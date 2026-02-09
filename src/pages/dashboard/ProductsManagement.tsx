@@ -268,11 +268,6 @@ export function ProductsManagement() {
           icon={Package}
           color="from-blue-500 to-cyan-500" />
         <ManagementStatsCard
-          title="Total Revenue"
-          value={`$${products.reduce((sum, p) => sum + (p.pricing || 0), 0).toFixed(2)}`}
-          icon={Package}
-          color="from-green-500 to-emerald-500" />
-        <ManagementStatsCard
           title="Categories"
           value={new Set(products.map(p => p.category)).size}
           icon={Package}

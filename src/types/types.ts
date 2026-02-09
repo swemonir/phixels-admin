@@ -42,6 +42,8 @@ export interface Blog {
   details: string;
   tags: string[];
   image?: string; // URL or path
+  icon?: string;
+  serviceId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -53,6 +55,8 @@ export interface CreateBlogPayload {
   details: string;
   tags: string[];
   image?: File;
+  icon?: string;
+  serviceId?: string;
 }
 
 // Portfolio
@@ -81,6 +85,8 @@ export interface CaseStudy {
   result: string;
   image: string;
   link: string;
+  icon?: string;
+  serviceId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -180,6 +186,96 @@ export interface CreateReviewPayload {
   budget: string;
   duration: string;
   summary: string;
+}
+
+// Analytics
+export interface AnalyticsOverview {
+  totalVisits: number;
+  conversions: number;
+  bounceRate: number;
+  avgDuration: number;
+  totalLeads: number;
+  pendingLeads: number;
+  bookedLeads: number;
+  conversionRate: number;
+  realtimeUsers: number;
+  newsletterSubs?: number;
+  clickCounts: {
+    gmail: number;
+    whatsapp: number;
+    fiverr: number;
+    linkedin: number;
+    facebook: number;
+    emailOpens: number;
+  };
+}
+
+export interface RealtimeAnalytics {
+  activeUsers: number;
+  deviceCounts: {
+    desktop: number;
+    mobile: number;
+    tablet: number;
+  };
+  pageCounts: Record<string, number>;
+  liveEvents: Array<{
+    event: string;
+    location: string;
+    device: string;
+    time: string;
+    activity: string;
+  }>;
+}
+
+export interface FunnelStage {
+  stage: string;
+  users: number;
+  rate: number;
+  dropoff?: number;
+}
+
+export interface TrafficDataPoint {
+  name: string;
+  visitors: number;
+  conversions: number;
+}
+
+export interface TopPageData {
+  path: string;
+  visits: number;
+  avgTime?: string | null;
+  bounce?: number | null;
+  conversions: number;
+}
+
+export interface CityDataPoint {
+  name: string;
+  country: string;
+  visitors: number;
+}
+
+export interface CountryDataPoint {
+  code: string;
+  name: string;
+  visitors: number;
+  conversions: number;
+  rate: number;
+  trend: 'up' | 'down' | 'neutral';
+}
+
+export interface DeviceData {
+  desktop: number;
+  mobile: number;
+  tablet: number;
+}
+
+export interface TrafficSourceData {
+  name: string;
+  visitors: number;
+  share: number;
+  conversions: number;
+  conversionRate: number;
+  trend: number;
 }
 
 // API Response wrapper

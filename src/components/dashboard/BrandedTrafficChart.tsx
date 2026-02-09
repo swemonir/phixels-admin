@@ -6,51 +6,31 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer } from
-'recharts';
-const data = [
-{
-  name: 'Mon',
-  visitors: 4000,
-  conversions: 240
-},
-{
-  name: 'Tue',
-  visitors: 3000,
-  conversions: 139
-},
-{
-  name: 'Wed',
-  visitors: 2000,
-  conversions: 980
-},
-{
-  name: 'Thu',
-  visitors: 2780,
-  conversions: 390
-},
-{
-  name: 'Fri',
-  visitors: 1890,
-  conversions: 480
-},
-{
-  name: 'Sat',
-  visitors: 2390,
-  conversions: 380
-},
-{
-  name: 'Sun',
-  visitors: 3490,
-  conversions: 430
-}];
+  ResponsiveContainer
+} from 'recharts';
+import { TrafficDataPoint } from '../../types/types';
 
-export function BrandedTrafficChart() {
+const defaultTrafficData: TrafficDataPoint[] = [
+  { name: 'Mon', visitors: 0, conversions: 0 },
+  { name: 'Tue', visitors: 0, conversions: 0 },
+  { name: 'Wed', visitors: 0, conversions: 0 },
+  { name: 'Thu', visitors: 0, conversions: 0 },
+  { name: 'Fri', visitors: 0, conversions: 0 },
+  { name: 'Sat', visitors: 0, conversions: 0 },
+  { name: 'Sun', visitors: 0, conversions: 0 }
+];
+
+interface BrandedTrafficChartProps {
+  data?: TrafficDataPoint[];
+}
+
+export function BrandedTrafficChart({ data: propData }: BrandedTrafficChartProps) {
+  const chartData = propData && propData.length > 0 ? propData : defaultTrafficData;
   return (
     <div className="h-[250px] w-full">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart
-          data={data}
+          data={chartData}
           margin={{
             top: 10,
             right: 0,
@@ -140,5 +120,4 @@ export function BrandedTrafficChart() {
         </AreaChart>
       </ResponsiveContainer>
     </div>);
-
 }

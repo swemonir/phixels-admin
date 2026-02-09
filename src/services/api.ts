@@ -1,7 +1,8 @@
 import axios, { AxiosInstance } from 'axios';
 import type {
     Product, Service, Career, PortfolioItem, Blog, CaseStudy, MailLog, MailPayload, CreateBlogPayload,
-    AuthResponse, Review
+    AuthResponse, Review, AnalyticsOverview, RealtimeAnalytics, FunnelStage, TrafficDataPoint,
+    TopPageData, CityDataPoint, CountryDataPoint, DeviceData, TrafficSourceData
 } from '../types/types';
 
 // Base URL from Postman collection
@@ -46,9 +47,6 @@ apiClient.interceptors.response.use(
 
 // Helper to extract data from response
 const getData = <T>(response: any): T => {
-    // Check if response data has a DATA property (common in some APIs)
-    // or if the response data IS the data.
-    // Based on Postman patterns, it often returns the object directly or wrapped.
     if (response.data && typeof response.data === 'object' && 'data' in response.data) {
         return response.data.data;
     }
@@ -81,7 +79,6 @@ export const authApi = {
 // Mail API
 export const mailApi = {
     send: async (data: MailPayload) => {
-        // Handle file uploads if present
         if (data.files && data.files.length > 0) {
             const formData = new FormData();
             formData.append('to', data.to);
@@ -295,6 +292,46 @@ export const careersApi = {
     delete: async (id: string) => {
         const response = await apiClient.delete(`/careers/${id}`);
         return getData(response);
+    }
+};
+
+// Analytics API
+export const analyticsApi = {
+    getOverview: async (range: string = 'all'): Promise<AnalyticsOverview> => {
+        const response = await apiClient.get(`/analytics/overview?range=${range}`);
+        return getData<AnalyticsOverview>(response);
+    },
+    getRealtime: async (): Promise<RealtimeAnalytics> => {
+        const response = await apiClient.get('/analytics/realtime');
+        return getData<RealtimeAnalytics>(response);
+    },
+    getFunnel: async (range: string = 'all'): Promise<FunnelStage[]> => {
+        const response = await apiClient.get(`/analytics/funnel?range=${range}`);
+        return getData<FunnelStage[]>(response);
+    },
+    getTrafficSeries: async (range: string = '7d'): Promise<TrafficDataPoint[]> => {
+        const response = await apiClient.get(`/analytics/traffic?range=${range}`);
+        return getData<TrafficDataPoint[]>(response);
+    },
+    getTopPages: async (range: string = '7d'): Promise<TopPageData[]> => {
+        const response = await apiClient.get(`/analytics/top-pages?range=${range}`);
+        return getData<TopPageData[]>(response);
+    },
+    getTopCities: async (range: string = '7d'): Promise<CityDataPoint[]> => {
+        const response = await apiClient.get(`/analytics/top-cities?range=${range}`);
+        return getData<CityDataPoint[]>(response);
+    },
+    getTopCountries: async (range: string = '7d'): Promise<CountryDataPoint[]> => {
+        const response = await apiClient.get(`/analytics/top-countries?range=${range}`);
+        return getData<CountryDataPoint[]>(response);
+    },
+    getDevices: async (range: string = '7d'): Promise<DeviceData> => {
+        const response = await apiClient.get(`/analytics/devices?range=${range}`);
+        return getData<DeviceData>(response);
+    },
+    getTrafficSources: async (range: string = '7d'): Promise<TrafficSourceData[]> => {
+        const response = await apiClient.get(`/analytics/traffic-sources?range=${range}`);
+        return getData<TrafficSourceData[]>(response);
     }
 };
 

@@ -19,9 +19,12 @@ export function ServicesManagement() {
     const [formData, setFormData] = useState({
         title: '',
         description: '',
+        icon: '',
         features: [] as string[],
+        images: [] as string[],
     });
     const [featureInput, setFeatureInput] = useState('');
+    const [imageInput, setImageInput] = useState('');
 
     // Status Modal State
     const [statusModal, setStatusModal] = useState<{
@@ -71,7 +74,9 @@ export function ServicesManagement() {
         setFormData({
             title: service.title,
             description: service.description,
+            icon: service.icon || '',
             features: service.features || [],
+            images: service.images || [],
         });
         setIsModalOpen(true);
     };
@@ -122,7 +127,9 @@ export function ServicesManagement() {
             const payload = {
                 title: formData.title,
                 description: formData.description,
-                features: formData.features
+                icon: formData.icon,
+                features: formData.features,
+                images: formData.images,
             };
 
             if (editingService) {
@@ -161,9 +168,12 @@ export function ServicesManagement() {
         setFormData({
             title: '',
             description: '',
+            icon: '',
             features: [],
+            images: [],
         });
         setFeatureInput('');
+        setImageInput('');
     };
 
     const addFeature = () => {
@@ -183,7 +193,33 @@ export function ServicesManagement() {
         });
     };
 
+    const addImage = () => {
+        if (imageInput.trim()) {
+            setFormData({
+                ...formData,
+                images: [...formData.images, imageInput.trim()],
+            });
+            setImageInput('');
+        }
+    };
+
+    const removeImage = (index: number) => {
+        setFormData({
+            ...formData,
+            images: formData.images.filter((_, i) => i !== index),
+        });
+    };
+
     const columns = [
+        {
+            key: 'icon',
+            label: 'Icon',
+            render: () => (
+                <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
+                    <span className="text-xl">{'🛠️'}</span>
+                </div>
+            ),
+        },
         {
             key: 'title',
             label: 'Service Name',
@@ -295,6 +331,20 @@ export function ServicesManagement() {
                             required />
                     </div>
 
+                    <div className="space-y-2">
+                        <label className="text-sm text-gray-400 font-medium">
+                            Icon
+                        </label>
+                        <input
+                            type="text"
+                            value={formData.icon}
+                            onChange={(e) =>
+                                setFormData({ ...formData, icon: e.target.value })
+                            }
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
+                            placeholder="e.g., 🌐, web-icon, or FaLaptop" />
+                    </div>
+
                     {/* Features */}
                     <div className="space-y-2">
                         <label className="text-sm text-gray-400 font-medium">
@@ -328,6 +378,48 @@ export function ServicesManagement() {
                                         ×
                                     </button>
                                 </span>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Images */}
+                    <div className="space-y-2">
+                        <label className="text-sm text-gray-400 font-medium">
+                            Service Images
+                        </label>
+                        <div className="flex gap-2">
+                            <input
+                                type="text"
+                                value={imageInput}
+                                onChange={(e) => setImageInput(e.target.value)}
+                                onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addImage())}
+                                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
+                                placeholder="Image URL (press Enter)" />
+                            <button
+                                type="button"
+                                onClick={addImage}
+                                className="px-4 py-3 rounded-xl bg-white/10 text-white hover:bg-white/20 transition-colors">
+                                Add
+                            </button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                            {formData.images.map((img, i) => (
+                                <div key={i} className="relative group">
+                                    <img
+                                        src={img}
+                                        alt={`Service ${i}`}
+                                        className="w-full h-24 object-cover rounded-lg border border-white/10"
+                                        onError={(e) => {
+                                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/150?text=Invalid+URL';
+                                        }}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeImage(i)}
+                                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Plus size={12} className="rotate-45" />
+                                    </button>
+                                </div>
                             ))}
                         </div>
                     </div>

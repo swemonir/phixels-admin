@@ -1,4 +1,3 @@
-import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   X,
@@ -13,8 +12,9 @@ import {
   Folder,
   CheckCircle,
   AlertCircle,
-  ExternalLink } from
-'lucide-react';
+  ExternalLink
+} from
+  'lucide-react';
 import { Button } from '../ui/Button';
 interface LeadDetailModalProps {
   isOpen: boolean;
@@ -69,9 +69,9 @@ export function LeadDetailModal({
                 className={`p-3 rounded-xl ${lead.status === 'Confirmed' ? 'bg-[color:var(--vibrant-green)]/10 text-[color:var(--vibrant-green)]' : 'bg-yellow-500/10 text-yellow-500'}`}>
 
                 {lead.status === 'Confirmed' ?
-                <CheckCircle size={24} /> :
+                  <CheckCircle size={24} /> :
 
-                <AlertCircle size={24} />
+                  <AlertCircle size={24} />
                 }
               </div>
               <div>
@@ -159,7 +159,7 @@ export function LeadDetailModal({
 
             {/* Meeting Info */}
             {lead.status === 'Confirmed' &&
-            <section>
+              <section>
                 <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Calendar size={14} /> Consultation Details
                 </h3>

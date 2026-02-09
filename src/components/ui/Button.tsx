@@ -1,6 +1,10 @@
-import React, { useState, useRef } from 'react';
-import { motion } from 'framer-motion';
-interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+import { useState, useRef, ButtonHTMLAttributes, MouseEvent, ReactNode } from 'react';
+import { motion, HTMLMotionProps } from 'framer-motion';
+
+type CollidingProps = 'onAnimationStart' | 'onDrag' | 'onDragEnd' | 'onDragStart' | 'style' | 'children';
+
+interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, CollidingProps>, Omit<HTMLMotionProps<"button">, CollidingProps> {
+  children?: ReactNode;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   glow?: boolean;
 }
@@ -17,7 +21,7 @@ export function Button({
     x: 0,
     y: 0
   });
-  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleMouseMove = (e: MouseEvent<HTMLButtonElement>) => {
     if (!ref.current) return;
     const { left, top, width, height } = ref.current.getBoundingClientRect();
     const x = (e.clientX - (left + width / 2)) * 0.2; // Magnetic strength
@@ -34,13 +38,13 @@ export function Button({
     });
   };
   const baseStyles =
-  'relative px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden';
+    'relative px-6 py-3 rounded-lg font-semibold transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden';
   const variants = {
     primary:
-    'bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white hover:shadow-[0_0_20px_rgba(237,31,36,0.6)]',
+      'bg-gradient-to-r from-[color:var(--bright-red)] to-[color:var(--deep-red)] text-white hover:shadow-[0_0_20px_rgba(237,31,36,0.6)]',
     secondary: 'bg-[color:var(--deep-navy)] text-white hover:bg-opacity-80',
     outline:
-    'border border-[color:var(--ice-grey)] text-white hover:border-[color:var(--bright-red)] hover:text-[color:var(--bright-red)]',
+      'border border-[color:var(--ice-grey)] text-white hover:border-[color:var(--bright-red)] hover:text-[color:var(--bright-red)]',
     ghost: 'text-white hover:text-[color:var(--bright-red)] bg-transparent'
   };
   return (
@@ -67,7 +71,7 @@ export function Button({
 
       {/* Glow effect overlay */}
       {glow &&
-      <div className="absolute inset-0 rounded-lg bg-white opacity-0 hover:opacity-10 transition-opacity duration-300" />
+        <div className="absolute inset-0 rounded-lg bg-white opacity-0 hover:opacity-10 transition-opacity duration-300" />
       }
       <span className="relative z-10 flex items-center gap-2">{children}</span>
     </motion.button>);

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   BarChart,
   Bar,
@@ -7,29 +6,30 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell } from
-'recharts';
+  Cell
+} from
+  'recharts';
 const data = [
-{
-  name: 'Visitors',
-  value: 12500,
-  rate: '100%'
-},
-{
-  name: 'Engaged',
-  value: 8400,
-  rate: '67%'
-},
-{
-  name: 'Contact',
-  value: 3200,
-  rate: '25%'
-},
-{
-  name: 'Converted',
-  value: 1100,
-  rate: '8.8%'
-}];
+  {
+    name: 'Visitors',
+    value: 12500,
+    rate: '100%'
+  },
+  {
+    name: 'Engaged',
+    value: 8400,
+    rate: '67%'
+  },
+  {
+    name: 'Contact',
+    value: 3200,
+    rate: '25%'
+  },
+  {
+    name: 'Converted',
+    value: 1100,
+    rate: '8.8%'
+  }];
 
 const colors = ['#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
 export function ConversionFunnelChart() {
@@ -76,10 +76,10 @@ export function ConversionFunnelChart() {
             }} />
 
           <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={32}>
-            {data.map((entry, index) =>
-            <Cell
-              key={`cell-${index}`}
-              fill={colors[index % colors.length]} />
+            {data.map((_entry, index) =>
+              <Cell
+                key={`cell-${index}`}
+                fill={colors[index % colors.length]} />
 
             )}
           </Bar>

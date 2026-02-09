@@ -1,39 +1,38 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import { Users, MousePointer, MessageSquare, CheckCircle } from 'lucide-react';
 const stages = [
-{
-  id: 'visitors',
-  label: 'Total Visitors',
-  value: 12500,
-  percent: 100,
-  color: 'bg-[color:var(--deep-navy)]',
-  icon: Users
-},
-{
-  id: 'engaged',
-  label: 'Engaged Users',
-  value: 8400,
-  percent: 67,
-  color: 'bg-blue-800',
-  icon: MousePointer
-},
-{
-  id: 'contact',
-  label: 'Started Contact',
-  value: 3200,
-  percent: 25,
-  color: 'bg-red-900',
-  icon: MessageSquare
-},
-{
-  id: 'converted',
-  label: 'Converted',
-  value: 1100,
-  percent: 8.8,
-  color: 'bg-[color:var(--bright-red)]',
-  icon: CheckCircle
-}];
+  {
+    id: 'visitors',
+    label: 'Total Visitors',
+    value: 12500,
+    percent: 100,
+    color: 'bg-[color:var(--deep-navy)]',
+    icon: Users
+  },
+  {
+    id: 'engaged',
+    label: 'Engaged Users',
+    value: 8400,
+    percent: 67,
+    color: 'bg-blue-800',
+    icon: MousePointer
+  },
+  {
+    id: 'contact',
+    label: 'Started Contact',
+    value: 3200,
+    percent: 25,
+    color: 'bg-red-900',
+    icon: MessageSquare
+  },
+  {
+    id: 'converted',
+    label: 'Converted',
+    value: 1100,
+    percent: 8.8,
+    color: 'bg-[color:var(--bright-red)]',
+    icon: CheckCircle
+  }];
 
 export function BrandedFunnelChart() {
   return (
@@ -42,8 +41,8 @@ export function BrandedFunnelChart() {
         {stages.map((stage, index) => {
           const nextStage = stages[index + 1];
           const dropOff = nextStage ?
-          Math.round((stage.value - nextStage.value) / stage.value * 100) :
-          0;
+            Math.round((stage.value - nextStage.value) / stage.value * 100) :
+            0;
           return (
             <div key={stage.id} className="relative">
               {/* Funnel Bar */}
@@ -105,7 +104,7 @@ export function BrandedFunnelChart() {
 
               {/* Drop-off Connector */}
               {nextStage &&
-              <div className="absolute left-5 top-10 bottom-0 w-0.5 bg-white/5 -z-0 h-10">
+                <div className="absolute left-5 top-10 bottom-0 w-0.5 bg-white/5 -z-0 h-10">
                   <div className="absolute top-1/2 left-4 -translate-y-1/2 flex items-center gap-1">
                     <div className="w-1.5 h-1.5 rounded-full bg-[color:var(--bright-red)]" />
                     <span className="text-[10px] text-[color:var(--bright-red)] font-mono">

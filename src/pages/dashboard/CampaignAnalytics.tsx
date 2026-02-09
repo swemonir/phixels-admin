@@ -1,13 +1,4 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import {
-  Target,
-  TrendingUp,
-  DollarSign,
-  MousePointer,
-  ArrowUpRight,
-  ArrowDownRight } from
-'lucide-react';
+import { useState } from 'react';
 import { DataDetailModal } from '../../components/dashboard/DataDetailModal';
 export function CampaignAnalytics() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -19,66 +10,66 @@ export function CampaignAnalytics() {
     setModalOpen(true);
   };
   const campaigns = [
-  {
-    name: 'Summer Sale 2024',
-    status: 'Active',
-    impressions: '45K',
-    clicks: '2.1K',
-    ctr: '4.6%',
-    conversions: 120,
-    cost: '$450',
-    roi: '240%'
-  },
-  {
-    name: 'LinkedIn Outreach',
-    status: 'Active',
-    impressions: '12K',
-    clicks: '850',
-    ctr: '7.1%',
-    conversions: 85,
-    cost: '$120',
-    roi: '450%'
-  },
-  {
-    name: 'Google Ads - Search',
-    status: 'Paused',
-    impressions: '28K',
-    clicks: '1.4K',
-    ctr: '5.0%',
-    conversions: 65,
-    cost: '$890',
-    roi: '110%'
-  },
-  {
-    name: 'Email Newsletter',
-    status: 'Active',
-    impressions: '5K',
-    clicks: '980',
-    ctr: '19.6%',
-    conversions: 140,
-    cost: '$0',
-    roi: '∞'
-  },
-  {
-    name: 'Retargeting FB',
-    status: 'Active',
-    impressions: '15K',
-    clicks: '3.2K',
-    ctr: '21.3%',
-    conversions: 210,
-    cost: '$320',
-    roi: '310%'
-  },
-  {
-    name: 'Q1 Brand Awareness',
-    status: 'Ended',
-    impressions: '120K',
-    clicks: '5.4K',
-    ctr: '4.5%',
-    conversions: 45,
-    cost: '$1200',
-    roi: '85%'
-  }];
+    {
+      name: 'Summer Sale 2024',
+      status: 'Active',
+      impressions: '45K',
+      clicks: '2.1K',
+      ctr: '4.6%',
+      conversions: 120,
+      cost: '$450',
+      roi: '240%'
+    },
+    {
+      name: 'LinkedIn Outreach',
+      status: 'Active',
+      impressions: '12K',
+      clicks: '850',
+      ctr: '7.1%',
+      conversions: 85,
+      cost: '$120',
+      roi: '450%'
+    },
+    {
+      name: 'Google Ads - Search',
+      status: 'Paused',
+      impressions: '28K',
+      clicks: '1.4K',
+      ctr: '5.0%',
+      conversions: 65,
+      cost: '$890',
+      roi: '110%'
+    },
+    {
+      name: 'Email Newsletter',
+      status: 'Active',
+      impressions: '5K',
+      clicks: '980',
+      ctr: '19.6%',
+      conversions: 140,
+      cost: '$0',
+      roi: '∞'
+    },
+    {
+      name: 'Retargeting FB',
+      status: 'Active',
+      impressions: '15K',
+      clicks: '3.2K',
+      ctr: '21.3%',
+      conversions: 210,
+      cost: '$320',
+      roi: '310%'
+    },
+    {
+      name: 'Q1 Brand Awareness',
+      status: 'Ended',
+      impressions: '120K',
+      clicks: '5.4K',
+      ctr: '4.5%',
+      conversions: 45,
+      cost: '$1200',
+      roi: '85%'
+    }];
 
   return (
     <div className="space-y-6">
@@ -129,10 +120,10 @@ export function CampaignAnalytics() {
             </thead>
             <tbody className="divide-y divide-white/5 text-xs">
               {campaigns.map((campaign, i) =>
-              <tr
-                key={i}
-                onClick={() => handleRowClick(campaign, 'Campaign Details')}
-                className="hover:bg-white/5 transition-colors group cursor-pointer">
+                <tr
+                  key={i}
+                  onClick={() => handleRowClick(campaign, 'Campaign Details')}
+                  className="hover:bg-white/5 transition-colors group cursor-pointer">
 
                   <td className="py-3 px-5">
                     <span className="text-white font-medium block group-hover:text-red-500 transition-colors">
@@ -141,7 +132,7 @@ export function CampaignAnalytics() {
                   </td>
                   <td className="py-3 px-5">
                     <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${campaign.status === 'Active' ? 'bg-green-500/10 text-green-500' : campaign.status === 'Paused' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-gray-500/10 text-gray-500'}`}>
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium ${campaign.status === 'Active' ? 'bg-green-500/10 text-green-500' : campaign.status === 'Paused' ? 'bg-yellow-500/10 text-yellow-500' : 'bg-gray-500/10 text-gray-500'}`}>
 
                       {campaign.status}
                     </span>

@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   AreaChart,
   Area,
@@ -6,44 +5,45 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer } from
-'recharts';
+  ResponsiveContainer
+} from
+  'recharts';
 const data = [
-{
-  name: 'Mon',
-  visitors: 4000,
-  conversions: 240
-},
-{
-  name: 'Tue',
-  visitors: 3000,
-  conversions: 139
-},
-{
-  name: 'Wed',
-  visitors: 2000,
-  conversions: 980
-},
-{
-  name: 'Thu',
-  visitors: 2780,
-  conversions: 390
-},
-{
-  name: 'Fri',
-  visitors: 1890,
-  conversions: 480
-},
-{
-  name: 'Sat',
-  visitors: 2390,
-  conversions: 380
-},
-{
-  name: 'Sun',
-  visitors: 3490,
-  conversions: 430
-}];
+  {
+    name: 'Mon',
+    visitors: 4000,
+    conversions: 240
+  },
+  {
+    name: 'Tue',
+    visitors: 3000,
+    conversions: 139
+  },
+  {
+    name: 'Wed',
+    visitors: 2000,
+    conversions: 980
+  },
+  {
+    name: 'Thu',
+    visitors: 2780,
+    conversions: 390
+  },
+  {
+    name: 'Fri',
+    visitors: 1890,
+    conversions: 480
+  },
+  {
+    name: 'Sat',
+    visitors: 2390,
+    conversions: 380
+  },
+  {
+    name: 'Sun',
+    visitors: 3490,
+    conversions: 430
+  }];
 
 export function TrafficChart() {
   return (

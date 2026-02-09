@@ -1,17 +1,16 @@
-import React from 'react';
 import { motion } from 'framer-motion';
 import {
   ArrowUpRight,
   ArrowDownRight,
   MoreHorizontal,
-  BoxIcon } from
-'lucide-react';
+  LucideIcon
+} from 'lucide-react';
 interface MetricCardProps {
   title: string;
   value: string | number;
   change?: number;
   changeLabel?: string;
-  icon: BoxIcon;
+  icon: LucideIcon;
   color?: string;
   trend?: 'up' | 'down' | 'neutral';
   data?: number[]; // For sparkline in future
@@ -56,15 +55,15 @@ export function MetricCard({
       </div>
 
       {change !== undefined &&
-      <div className="mt-4 flex items-center gap-2">
+        <div className="mt-4 flex items-center gap-2">
           <div
-          className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${isPositive ? 'bg-green-500/10 text-green-500' : isNegative ? 'bg-red-500/10 text-red-500' : 'bg-gray-500/10 text-gray-400'}`}>
+            className={`flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full ${isPositive ? 'bg-green-500/10 text-green-500' : isNegative ? 'bg-red-500/10 text-red-500' : 'bg-gray-500/10 text-gray-400'}`}>
 
             {isPositive ?
-          <ArrowUpRight size={14} /> :
-          isNegative ?
-          <ArrowDownRight size={14} /> :
-          null}
+              <ArrowUpRight size={14} /> :
+              isNegative ?
+                <ArrowDownRight size={14} /> :
+                null}
             <span>{Math.abs(change)}%</span>
           </div>
           <span className="text-xs text-gray-500">{changeLabel}</span>

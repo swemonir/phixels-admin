@@ -4,18 +4,14 @@ import {
   Globe,
   Facebook,
   Linkedin,
-  Instagram,
-  Twitter,
   Plus,
   ExternalLink,
   RefreshCw,
   CheckCircle,
-  AlertCircle,
-  BarChart2,
   DollarSign,
   Target,
-  MousePointer } from
-'lucide-react';
+  MousePointer
+} from 'lucide-react';
 import { StatsCard } from '../../components/dashboard/StatsCard';
 interface Integration {
   id: string;
@@ -31,45 +27,45 @@ interface Integration {
   };
 }
 const integrations: Integration[] = [
-{
-  id: 'google',
-  name: 'Google Ads',
-  icon: Globe,
-  status: 'connected',
-  lastSync: '5 mins ago',
-  metrics: {
-    spend: '$1,240.50',
-    impressions: '45.2K',
-    clicks: '1,205',
-    conversions: '85'
-  }
-},
-{
-  id: 'facebook',
-  name: 'Meta Ads',
-  icon: Facebook,
-  status: 'connected',
-  lastSync: '12 mins ago',
-  metrics: {
-    spend: '$850.00',
-    impressions: '32.1K',
-    clicks: '950',
-    conversions: '42'
-  }
-},
-{
-  id: 'linkedin',
-  name: 'LinkedIn Ads',
-  icon: Linkedin,
-  status: 'disconnected',
-  lastSync: 'Never',
-  metrics: {
-    spend: '$0.00',
-    impressions: '0',
-    clicks: '0',
-    conversions: '0'
-  }
-}];
+  {
+    id: 'google',
+    name: 'Google Ads',
+    icon: Globe,
+    status: 'connected',
+    lastSync: '5 mins ago',
+    metrics: {
+      spend: '$1,240.50',
+      impressions: '45.2K',
+      clicks: '1,205',
+      conversions: '85'
+    }
+  },
+  {
+    id: 'facebook',
+    name: 'Meta Ads',
+    icon: Facebook,
+    status: 'connected',
+    lastSync: '12 mins ago',
+    metrics: {
+      spend: '$850.00',
+      impressions: '32.1K',
+      clicks: '950',
+      conversions: '42'
+    }
+  },
+  {
+    id: 'linkedin',
+    name: 'LinkedIn Ads',
+    icon: Linkedin,
+    status: 'disconnected',
+    lastSync: 'Never',
+    metrics: {
+      spend: '$0.00',
+      impressions: '0',
+      clicks: '0',
+      conversions: '0'
+    }
+  }];
 
 export function CampaignIntegration() {
   const [utmBuilder, setUtmBuilder] = useState({
@@ -81,8 +77,8 @@ export function CampaignIntegration() {
     content: ''
   });
   const generatedUrl = utmBuilder.url ?
-  `${utmBuilder.url}?utm_source=${utmBuilder.source}&utm_medium=${utmBuilder.medium}&utm_campaign=${utmBuilder.campaign}${utmBuilder.term ? `&utm_term=${utmBuilder.term}` : ''}${utmBuilder.content ? `&utm_content=${utmBuilder.content}` : ''}` :
-  '';
+    `${utmBuilder.url}?utm_source=${utmBuilder.source}&utm_medium=${utmBuilder.medium}&utm_campaign=${utmBuilder.campaign}${utmBuilder.term ? `&utm_term=${utmBuilder.term}` : ''}${utmBuilder.content ? `&utm_content=${utmBuilder.content}` : ''}` :
+    '';
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -135,19 +131,19 @@ export function CampaignIntegration() {
       </h2>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {integrations.map((platform) =>
-        <motion.div
-          key={platform.id}
-          whileHover={{
-            y: -5
-          }}
-          className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
+          <motion.div
+            key={platform.id}
+            whileHover={{
+              y: -5
+            }}
+            className="bg-[#0A0A0A] border border-white/10 rounded-2xl p-6 relative overflow-hidden group">
 
             <div className="absolute top-0 right-0 p-4">
               <div
-              className={`flex items-center gap-2 text-xs font-bold px-2 py-1 rounded-full ${platform.status === 'connected' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
+                className={`flex items-center gap-2 text-xs font-bold px-2 py-1 rounded-full ${platform.status === 'connected' ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'}`}>
 
                 <div
-                className={`w-2 h-2 rounded-full ${platform.status === 'connected' ? 'bg-green-500' : 'bg-gray-400'}`} />
+                  className={`w-2 h-2 rounded-full ${platform.status === 'connected' ? 'bg-green-500' : 'bg-gray-400'}`} />
 
                 {platform.status === 'connected' ? 'Active' : 'Inactive'}
               </div>
@@ -168,7 +164,7 @@ export function CampaignIntegration() {
             </div>
 
             {platform.status === 'connected' ?
-          <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="p-3 bg-white/5 rounded-lg">
                   <div className="text-xs text-gray-400 mb-1">Spend</div>
                   <div className="font-bold text-white">
@@ -191,30 +187,30 @@ export function CampaignIntegration() {
                   <div className="text-xs text-gray-400 mb-1">CTR</div>
                   <div className="font-bold text-blue-400">
                     {(
-                parseInt(platform.metrics.clicks.replace(',', '')) /
-                parseInt(
-                  platform.metrics.impressions.replace('K', '000')
-                ) *
-                100).
-                toFixed(2)}
+                      parseInt(platform.metrics.clicks.replace(',', '')) /
+                      parseInt(
+                        platform.metrics.impressions.replace('K', '000')
+                      ) *
+                      100).
+                      toFixed(2)}
                     %
                   </div>
                 </div>
               </div> :
 
-          <div className="h-[152px] flex items-center justify-center mb-6 bg-white/5 rounded-lg border border-dashed border-white/10">
+              <div className="h-[152px] flex items-center justify-center mb-6 bg-white/5 rounded-lg border border-dashed border-white/10">
                 <p className="text-gray-500 text-sm">
                   Connect account to see metrics
                 </p>
               </div>
-          }
+            }
 
             <button
-            className={`w-full py-3 rounded-xl font-bold transition-colors ${platform.status === 'connected' ? 'bg-white/5 text-white hover:bg-white/10' : 'bg-[color:var(--bright-red)] text-white hover:bg-red-700'}`}>
+              className={`w-full py-3 rounded-xl font-bold transition-colors ${platform.status === 'connected' ? 'bg-white/5 text-white hover:bg-white/10' : 'bg-[color:var(--bright-red)] text-white hover:bg-red-700'}`}>
 
               {platform.status === 'connected' ?
-            'Manage Connection' :
-            'Connect Account'}
+                'Manage Connection' :
+                'Connect Account'}
             </button>
           </motion.div>
         )}
@@ -248,10 +244,10 @@ export function CampaignIntegration() {
                 type="text"
                 value={utmBuilder.url}
                 onChange={(e) =>
-                setUtmBuilder({
-                  ...utmBuilder,
-                  url: e.target.value
-                })
+                  setUtmBuilder({
+                    ...utmBuilder,
+                    url: e.target.value
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="https://pixcel.com/landing-page" />
@@ -266,10 +262,10 @@ export function CampaignIntegration() {
                   type="text"
                   value={utmBuilder.source}
                   onChange={(e) =>
-                  setUtmBuilder({
-                    ...utmBuilder,
-                    source: e.target.value
-                  })
+                    setUtmBuilder({
+                      ...utmBuilder,
+                      source: e.target.value
+                    })
                   }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   placeholder="google, newsletter" />
@@ -283,10 +279,10 @@ export function CampaignIntegration() {
                   type="text"
                   value={utmBuilder.medium}
                   onChange={(e) =>
-                  setUtmBuilder({
-                    ...utmBuilder,
-                    medium: e.target.value
-                  })
+                    setUtmBuilder({
+                      ...utmBuilder,
+                      medium: e.target.value
+                    })
                   }
                   className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                   placeholder="cpc, email" />
@@ -301,10 +297,10 @@ export function CampaignIntegration() {
                 type="text"
                 value={utmBuilder.campaign}
                 onChange={(e) =>
-                setUtmBuilder({
-                  ...utmBuilder,
-                  campaign: e.target.value
-                })
+                  setUtmBuilder({
+                    ...utmBuilder,
+                    campaign: e.target.value
+                  })
                 }
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none"
                 placeholder="spring_sale" />
@@ -318,7 +314,7 @@ export function CampaignIntegration() {
             </label>
             <div className="bg-black/50 border border-white/10 rounded-lg p-4 break-all text-gray-300 font-mono text-sm min-h-[100px]">
               {generatedUrl ||
-              'Fill in the required fields to generate your tracking URL...'}
+                'Fill in the required fields to generate your tracking URL...'}
             </div>
             <button
               onClick={() => navigator.clipboard.writeText(generatedUrl)}

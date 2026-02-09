@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { Globe, MapPin } from 'lucide-react';
 import { CountryTable } from '../../components/dashboard/CountryTable';
 import { CityTable } from '../../components/dashboard/CityTable';

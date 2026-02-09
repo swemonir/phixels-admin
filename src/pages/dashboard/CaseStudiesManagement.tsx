@@ -6,8 +6,8 @@ import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsC
 import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
 import { RichTextEditor } from '../../components/dashboard/RichTextEditor';
 import { StatusModal } from '../../components/dashboard/StatusModal';
-import { caseStudiesApi } from '../../services/api';
-import type { CaseStudy } from '../../types/types';
+import { caseStudiesApi, servicesApi } from '../../services/api';
+import type { CaseStudy, Service } from '../../types/types';
 
 interface CaseStudyDisplay extends CaseStudy {
   id: string;
@@ -15,6 +15,7 @@ interface CaseStudyDisplay extends CaseStudy {
 
 export function CaseStudiesManagement() {
   const [studies, setStudies] = useState<CaseStudyDisplay[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudy, setEditingStudy] = useState<CaseStudyDisplay | null>(null);
   const [loading, setLoading] = useState(true);
@@ -43,7 +44,9 @@ export function CaseStudiesManagement() {
     solution: '',
     result: '',
     image: '',
-    link: ''
+    link: '',
+    icon: '',
+    serviceId: ''
   });
 
   const categories = [
@@ -53,7 +56,17 @@ export function CaseStudiesManagement() {
 
   useEffect(() => {
     fetchStudies();
+    fetchServices();
   }, []);
+
+  const fetchServices = async () => {
+    try {
+      const data = await servicesApi.getAll();
+      setServices(data);
+    } catch (err) {
+      console.error('Error fetching services:', err);
+    }
+  };
 
   const fetchStudies = async () => {
     try {
@@ -89,7 +102,9 @@ export function CaseStudiesManagement() {
       solution: study.solution,
       result: study.result,
       image: study.image,
-      link: study.link
+      link: study.link,
+      icon: study.icon || '',
+      serviceId: study.serviceId || ''
     });
     setIsModalOpen(true);
   };
@@ -146,7 +161,9 @@ export function CaseStudiesManagement() {
         solution: form.solution,
         result: form.result,
         image: form.image,
-        link: form.link
+        link: form.link,
+        icon: form.icon,
+        serviceId: form.serviceId
       };
 
       if (editingStudy) {
@@ -190,11 +207,22 @@ export function CaseStudiesManagement() {
       solution: '',
       result: '',
       image: '',
-      link: ''
+      link: '',
+      icon: '',
+      serviceId: ''
     });
   };
 
   const columns = [
+    {
+      key: 'icon',
+      label: 'Icon',
+      render: (value: string) => (
+        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
+          <span className="text-xl">{value || '📁'}</span>
+        </div>
+      ),
+    },
     {
       key: 'title',
       label: 'Case Study',
@@ -232,6 +260,18 @@ export function CaseStudiesManagement() {
       label: 'Result',
       render: (value: string) =>
         <div className="font-bold text-[color:var(--vibrant-green)] line-clamp-2" dangerouslySetInnerHTML={{ __html: value }} />
+    },
+    {
+      key: 'serviceId',
+      label: 'Related Service',
+      render: (value: string) => {
+        const service = services.find(s => s._id === value);
+        return service ? (
+          <span className="text-blue-400 font-medium">{service.title}</span>
+        ) : (
+          <span className="text-gray-500">-</span>
+        );
+      }
     },
     {
       key: 'link',
@@ -374,6 +414,46 @@ export function CaseStudiesManagement() {
               })
             }
             label="Project Thumbnail *" />
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400 font-medium">
+                Related Service
+              </label>
+              <select
+                value={form.serviceId}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    serviceId: e.target.value
+                  })
+                }
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none">
+                <option value="">Select a Service</option>
+                {services.map((service) => (
+                  <option key={service._id} value={service._id}>
+                    {service.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400 font-medium">
+                Icon
+              </label>
+              <input
+                type="text"
+                value={form.icon}
+                onChange={(e) =>
+                  setForm({
+                    ...form,
+                    icon: e.target.value
+                  })
+                }
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
+                placeholder="e.g., 🌐, web-icon, or FaLaptop" />
+            </div>
+          </div>
 
           <div className="space-y-2">
             <label className="text-sm text-gray-400 font-medium">

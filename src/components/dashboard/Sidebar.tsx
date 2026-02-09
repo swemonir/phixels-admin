@@ -19,7 +19,8 @@ import {
   ChevronsLeft,
   ChevronsRight,
   MessageSquare,
-  Star
+  Star,
+  Wrench
 } from
   'lucide-react';
 import { useAuth } from '../../context/AuthContext';
@@ -80,6 +81,11 @@ const categories: MenuCategory[] = [
         name: 'Blog Posts',
         path: '/dashboard/blog',
         icon: BookOpen
+      },
+      {
+        name: 'Services',
+        path: '/dashboard/services',
+        icon: Wrench
       },
       {
         name: 'Case Studies',

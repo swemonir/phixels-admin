@@ -7,8 +7,8 @@ import { ManagementStatsCard } from '../../components/dashboard/ManagementStatsC
 import { ImageUploadField } from '../../components/dashboard/ImageUploadField';
 import { RichTextEditor } from '../../components/dashboard/RichTextEditor';
 import { StatusModal } from '../../components/dashboard/StatusModal';
-import { blogsApi } from '../../services/api';
-import type { Blog, CreateBlogPayload } from '../../types/types';
+import { blogsApi, servicesApi } from '../../services/api';
+import type { Blog, CreateBlogPayload, Service } from '../../types/types';
 
 interface BlogDisplay extends Blog {
   id: string;
@@ -63,6 +63,7 @@ const initialCategories: Category[] = [
 export function BlogManagement() {
   const [posts, setPosts] = useState<BlogDisplay[]>([]);
   const [categories, setCategories] = useState<Category[]>(initialCategories);
+  const [services, setServices] = useState<Service[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingPost, setEditingPost] = useState<BlogDisplay | null>(null);
@@ -95,14 +96,26 @@ export function BlogManagement() {
     readingTime: '5 min',
     details: '',
     tags: [] as string[],
-    status: 'draft' as 'published' | 'draft'
+    status: 'draft' as 'published' | 'draft',
+    icon: '',
+    serviceId: ''
   });
 
   const [tagInput, setTagInput] = useState('');
 
   useEffect(() => {
     fetchPosts();
+    fetchServices();
   }, []);
+
+  const fetchServices = async () => {
+    try {
+      const data = await servicesApi.getAll();
+      setServices(data);
+    } catch (err) {
+      console.error('Error fetching services:', err);
+    }
+  };
 
   const fetchPosts = async () => {
     try {
@@ -146,7 +159,9 @@ export function BlogManagement() {
       readingTime: post.readingTime || '5 min',
       details: post.details,
       tags: post.tags,
-      status: post.status
+      status: post.status,
+      icon: post.icon || '',
+      serviceId: post.serviceId || ''
     });
     setIsModalOpen(true);
   };
@@ -216,7 +231,9 @@ export function BlogManagement() {
         readingTime: postForm.readingTime,
         details: postForm.details,
         tags: postForm.tags,
-        image: postForm.imageFile || undefined
+        image: postForm.imageFile || undefined,
+        icon: postForm.icon,
+        serviceId: postForm.serviceId
       };
 
       if (editingPost) {
@@ -263,7 +280,9 @@ export function BlogManagement() {
       readingTime: '5 min',
       details: '',
       tags: [],
-      status: 'draft'
+      status: 'draft',
+      icon: '',
+      serviceId: ''
     });
     setTagInput('');
   };
@@ -286,6 +305,15 @@ export function BlogManagement() {
   };
 
   const columns = [
+    {
+      key: 'icon',
+      label: 'Icon',
+      render: (value: string) => (
+        <div className="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center border border-white/10">
+          <span className="text-xl">{value || '📰'}</span>
+        </div>
+      ),
+    },
     {
       key: 'title',
       label: 'Post Title',
@@ -336,6 +364,18 @@ export function BlogManagement() {
     {
       key: 'readTime',
       label: 'Read Time'
+    },
+    {
+      key: 'serviceId',
+      label: 'Related Service',
+      render: (value: string) => {
+        const service = services.find(s => s._id === value);
+        return service ? (
+          <span className="text-blue-400 font-medium">{service.title}</span>
+        ) : (
+          <span className="text-gray-500">-</span>
+        );
+      }
     },
     {
       key: 'status',
@@ -594,6 +634,46 @@ export function BlogManagement() {
                   </button>
                 </span>
               )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400 font-medium">
+                Related Service
+              </label>
+              <select
+                value={postForm.serviceId}
+                onChange={(e) =>
+                  setPostForm({
+                    ...postForm,
+                    serviceId: e.target.value
+                  })
+                }
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none">
+                <option value="">Select a Service</option>
+                {services.map((service) => (
+                  <option key={service._id} value={service._id}>
+                    {service.title}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm text-gray-400 font-medium">
+                Icon
+              </label>
+              <input
+                type="text"
+                value={postForm.icon}
+                onChange={(e) =>
+                  setPostForm({
+                    ...postForm,
+                    icon: e.target.value
+                  })
+                }
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-[color:var(--bright-red)] focus:outline-none transition-colors"
+                placeholder="e.g., 🌐, web-icon, or FaLaptop" />
             </div>
           </div>
 

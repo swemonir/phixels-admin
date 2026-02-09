@@ -1,51 +1,22 @@
 import React from 'react';
 import { ArrowUpRight, ArrowDownRight, Minus } from 'lucide-react';
-const countries = [
-{
-  code: 'US',
-  name: 'United States',
-  visitors: '12,450',
-  conversions: '850',
-  rate: '6.8%',
-  trend: 'up'
-},
-{
-  code: 'GB',
-  name: 'United Kingdom',
-  visitors: '8,200',
-  conversions: '620',
-  rate: '7.5%',
-  trend: 'up'
-},
-{
-  code: 'CA',
-  name: 'Canada',
-  visitors: '5,100',
-  conversions: '310',
-  rate: '6.0%',
-  trend: 'down'
-},
-{
-  code: 'DE',
-  name: 'Germany',
-  visitors: '4,800',
-  conversions: '290',
-  rate: '6.0%',
-  trend: 'neutral'
-},
-{
-  code: 'AU',
-  name: 'Australia',
-  visitors: '3,200',
-  conversions: '240',
-  rate: '7.5%',
-  trend: 'up'
-}];
+import { CountryDataPoint } from '../../types/types';
+
+const countriesFallback: any[] = [
+  { code: 'US', name: 'United States', visitors: 12450, conversions: 850, rate: '6.8%', trend: 'up' },
+  { code: 'GB', name: 'United Kingdom', visitors: 8200, conversions: 620, rate: '7.5%', trend: 'up' },
+  { code: 'CA', name: 'Canada', visitors: 5100, conversions: 310, rate: '6.0%', trend: 'down' },
+  { code: 'DE', name: 'Germany', visitors: 4800, conversions: 290, rate: '6.0%', trend: 'neutral' },
+  { code: 'AU', name: 'Australia', visitors: 3200, conversions: 240, rate: '7.5%', trend: 'up' }
+];
 
 interface CountryTableProps {
   onRowClick?: (data: any) => void;
+  data?: CountryDataPoint[];
 }
-export function CountryTable({ onRowClick }: CountryTableProps) {
+
+export function CountryTable({ onRowClick, data: propData }: CountryTableProps) {
+  const displayCountries = propData && propData.length > 0 ? propData : countriesFallback;
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-left border-collapse">
@@ -59,11 +30,11 @@ export function CountryTable({ onRowClick }: CountryTableProps) {
           </tr>
         </thead>
         <tbody className="text-xs">
-          {countries.map((country) =>
-          <tr
-            key={country.code}
-            onClick={() => onRowClick && onRowClick(country)}
-            className="border-b border-white/5 hover:bg-white/5 transition-colors group cursor-pointer">
+          {displayCountries.map((country: any) =>
+            <tr
+              key={country.code}
+              onClick={() => onRowClick && onRowClick(country)}
+              className="border-b border-white/5 hover:bg-white/5 transition-colors group cursor-pointer">
 
               <td className="py-2 px-2">
                 <div className="flex items-center gap-2">
@@ -76,31 +47,31 @@ export function CountryTable({ onRowClick }: CountryTableProps) {
                 </div>
               </td>
               <td className="py-2 px-2 text-right text-gray-400 font-mono">
-                {country.visitors}
+                {country.visitors?.toLocaleString()}
               </td>
               <td className="py-2 px-2 text-right text-[color:var(--bright-red)] font-bold">
-                {country.conversions}
+                {country.conversions?.toLocaleString()}
               </td>
               <td className="py-2 px-2 text-right text-gray-300">
-                {country.rate}
+                {country.rate || '0%'}
               </td>
               <td className="py-2 px-2 text-right">
                 <div className="flex justify-end">
                   {country.trend === 'up' &&
-                <ArrowUpRight
-                  size={14}
-                  className="text-[color:var(--vibrant-green)]" />
+                    <ArrowUpRight
+                      size={14}
+                      className="text-[color:var(--vibrant-green)]" />
 
-                }
+                  }
                   {country.trend === 'down' &&
-                <ArrowDownRight
-                  size={14}
-                  className="text-[color:var(--bright-red)]" />
+                    <ArrowDownRight
+                      size={14}
+                      className="text-[color:var(--bright-red)]" />
 
-                }
+                  }
                   {country.trend === 'neutral' &&
-                <Minus size={14} className="text-gray-600" />
-                }
+                    <Minus size={14} className="text-gray-600" />
+                  }
                 </div>
               </td>
             </tr>
@@ -108,5 +79,4 @@ export function CountryTable({ onRowClick }: CountryTableProps) {
         </tbody>
       </table>
     </div>);
-
 }

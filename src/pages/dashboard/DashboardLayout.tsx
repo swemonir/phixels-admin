@@ -1,16 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Sidebar } from '../../components/dashboard/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import {
-  TrendingUp,
   Users,
-  DollarSign,
   Percent,
   ChevronDown,
   Calendar,
   ArrowUpRight,
-  TrendingDown,
   MessageSquare,
   Mail,
   Briefcase,
@@ -18,67 +15,91 @@ import {
   Clock,
   AlertCircle,
   Bell,
-  Activity } from
-'lucide-react';
+} from
+  'lucide-react';
 import { DropOffsModal } from '../../components/dashboard/DropOffsModal';
 import { NotificationDropdown } from '../../components/dashboard/NotificationDropdown';
-import { RealTimeUsersModal } from '../../components/dashboard/RealTimeUsersModal';
 import { motion, AnimatePresence } from 'framer-motion';
+import { analyticsApi, mailApi, careersApi } from '../../services/api';
+import { AnalyticsOverview } from '../../types/types';
+
 export function DashboardLayout() {
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isDropoffModalOpen, setIsDropoffModalOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [isRealTimeModalOpen, setIsRealTimeModalOpen] = useState(false);
   const [timeRange, setTimeRange] = useState('7 Days');
   const [isTimeDropdownOpen, setIsTimeDropdownOpen] = useState(false);
-  const [realTimeUsers, setRealTimeUsers] = useState(42);
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsOverview | null>(null);
+  const [mailLogsCount, setMailLogsCount] = useState(0);
+  const [careersCount, setCareersCount] = useState(0);
+
   const location = useLocation();
-  // Simulate real-time user count changes
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      setRealTimeUsers((prev) => {
-        const change = Math.random() > 0.5 ? 1 : -1;
-        return Math.max(20, Math.min(80, prev + change));
-      });
-    }, 3000);
+    if (!isAuthenticated) return;
+
+    const fetchData = async () => {
+      try {
+        const [analytics, mailLogs, careers] = await Promise.all([
+          analyticsApi.getOverview('all'),
+          mailApi.getLogs(),
+          careersApi.getAll()
+        ]);
+        setAnalyticsData(analytics);
+        setMailLogsCount(mailLogs.length);
+        setCareersCount(careers.length);
+      } catch (error) {
+        console.error('Failed to fetch dashboard layout data:', error);
+      }
+    };
+
+    fetchData();
+    // Poll for updates every 30 seconds for real-time feel
+    const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [isAuthenticated]);
+
   if (!isAuthenticated) {
     return <Navigate to="/dashboard/login" replace />;
   }
   const timeRanges = [
-  '1 Hour',
-  '1 Day',
-  '3 Days',
-  '7 Days',
-  '1 Month',
-  '3 Months',
-  '6 Months',
-  '1 Year',
-  'Custom'];
+    'All',
+    '1 Hour',
+    '1 Day',
+    '3 Days',
+    '7 Days',
+    '1 Month',
+    '3 Months',
+    '6 Months',
+    '1 Year',
+    'Custom'];
 
   // Pages where time dropdown should be visible
   const analyticsPages = [
-  '/dashboard',
-  '/dashboard/funnel',
-  '/dashboard/geographic',
-  '/dashboard/traffic',
-  '/dashboard/realtime',
-  '/dashboard/leads'];
+    '/dashboard',
+    '/dashboard/funnel',
+    '/dashboard/geographic',
+    '/dashboard/traffic',
+    '/dashboard/realtime',
+    '/dashboard/leads'];
 
   const showTimeDropdown = analyticsPages.includes(location.pathname);
-  // Mock Data based on Google Apps Script forms
+
+  // Use data from API, fallback to 0
   const metrics = {
-    totalLeads: 142,
-    pendingMeetings: 28,
-    confirmedMeetings: 114,
-    conversionRate: 80.2,
-    contactMessages: 15,
-    newsletterSubs: 340,
-    jobApplications: 12
+    totalLeads: analyticsData?.totalLeads || 0,
+    pendingMeetings: analyticsData?.pendingLeads || 0,
+    confirmedMeetings: analyticsData?.bookedLeads || 0,
+    conversionRate: analyticsData?.conversionRate || 0,
+    contactMessages: mailLogsCount,
+    newsletterSubs: analyticsData?.newsletterSubs || 0,
+    jobApplications: careersCount
   };
+
+  const realTimeUsers = analyticsData?.realtimeUsers || 0;
+
   return (
     <div className="min-h-screen bg-[#050505] flex">
       <Sidebar
@@ -93,7 +114,7 @@ export function DashboardLayout() {
         <header className="h-16 bg-[#0A0A0A]/80 backdrop-blur-md border-b border-white/10 sticky top-0 z-40 px-6 flex items-center justify-between">
           <div className="flex items-center gap-2">
             {/* Form-Based Metrics Bar */}
-            <div className="flex items-center gap-6 text-sm hidden xl:flex">
+            <div className="flex items-center gap-6 text-sm xl:flex">
               {/* Real-Time Users Badge - Circular with Gradient Border */}
               <motion.button
                 onClick={() => navigate('/dashboard/realtime')}
@@ -112,7 +133,7 @@ export function DashboardLayout() {
                     className="absolute inset-0 rounded-full"
                     style={{
                       background:
-                      'conic-gradient(from 0deg, #ED1F24, #FFFF00, #00CD49, #ED1F24)'
+                        'conic-gradient(from 0deg, #ED1F24, #FFFF00, #00CD49, #ED1F24)'
                     }}
                     animate={{
                       rotate: 360
@@ -293,10 +314,10 @@ export function DashboardLayout() {
 
             {/* Time Range Dropdown - Conditional */}
             {showTimeDropdown &&
-            <div className="relative">
+              <div className="relative">
                 <button
-                onClick={() => setIsTimeDropdownOpen(!isTimeDropdownOpen)}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
+                  onClick={() => setIsTimeDropdownOpen(!isTimeDropdownOpen)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs font-medium text-gray-300 hover:text-white hover:bg-white/10 transition-all">
 
                   <Calendar size={12} />
                   {timeRange}
@@ -305,44 +326,44 @@ export function DashboardLayout() {
 
                 <AnimatePresence>
                   {isTimeDropdownOpen &&
-                <>
+                    <>
                       <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setIsTimeDropdownOpen(false)} />
+                        className="fixed inset-0 z-10"
+                        onClick={() => setIsTimeDropdownOpen(false)} />
 
                       <motion.div
-                    initial={{
-                      opacity: 0,
-                      y: 10,
-                      scale: 0.95
-                    }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      scale: 1
-                    }}
-                    exit={{
-                      opacity: 0,
-                      y: 10,
-                      scale: 0.95
-                    }}
-                    className="absolute right-0 top-full mt-2 w-40 bg-[#0A0A0A] border border-white/10 rounded-xl shadow-xl z-20 overflow-hidden py-1">
+                        initial={{
+                          opacity: 0,
+                          y: 10,
+                          scale: 0.95
+                        }}
+                        animate={{
+                          opacity: 1,
+                          y: 0,
+                          scale: 1
+                        }}
+                        exit={{
+                          opacity: 0,
+                          y: 10,
+                          scale: 0.95
+                        }}
+                        className="absolute right-0 top-full mt-2 w-40 bg-[#0A0A0A] border border-white/10 rounded-xl shadow-xl z-20 overflow-hidden py-1">
 
                         {timeRanges.map((range) =>
-                    <button
-                      key={range}
-                      onClick={() => {
-                        setTimeRange(range);
-                        setIsTimeDropdownOpen(false);
-                      }}
-                      className={`w-full text-left px-4 py-2 text-xs hover:bg-white/5 transition-colors ${timeRange === range ? 'text-[color:var(--bright-red)] font-bold' : 'text-gray-400'}`}>
+                          <button
+                            key={range}
+                            onClick={() => {
+                              setTimeRange(range);
+                              setIsTimeDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-2 text-xs hover:bg-white/5 transition-colors ${timeRange === range ? 'text-[color:var(--bright-red)] font-bold' : 'text-gray-400'}`}>
 
                             {range}
                           </button>
-                    )}
+                        )}
                       </motion.div>
                     </>
-                }
+                  }
                 </AnimatePresence>
               </div>
             }
